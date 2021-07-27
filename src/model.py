@@ -48,7 +48,8 @@ class Siamese(tf.keras.Model):
         return cls(**config)
 
     def save_model(self):
-        self.save(self._checkpoint_dir)
+        pass
+        # self.save(self._checkpoint_dir)
 
 
 class AlexnetEncoder(tf.keras.Model):

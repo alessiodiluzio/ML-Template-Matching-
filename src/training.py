@@ -62,18 +62,18 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         print("\nVALIDATE")
 
-        for b, (image, template, label, boxes) in enumerate(validation_set):
+        for b, (image, template, label) in enumerate(validation_set):
 
-            mask = tf.squeeze(label, axis=-1)
-            one_hot_labels = tf.one_hot(indices=mask, depth=2)
-            mask = tf.cast(mask, tf.float32)
+            #mask = tf.squeeze(label, axis=-1)
+            one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+            label = tf.cast(label, dtype=tf.float32)
             logits = siam_model.forward([image, template])
             loss = compute_cross_entropy_loss(logits, one_hot_labels,
                                               balance_factor=balance_factor, training=False)
 
-            precision, recall = precision_recall(logits, mask)
+            precision, recall = precision_recall(logits, label)
             f1score_value = f1score(precision, recall)
-            accuracy_value = accuracy(logits, mask)
+            accuracy_value = accuracy(logits, label)
 
             val_loss(loss)
             val_f1score(f1score)
