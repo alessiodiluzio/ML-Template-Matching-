@@ -65,7 +65,7 @@ def create_label_mask(label_mask):
     return label_mask
 
 
-def save_plot(image, template, label, logit=None, dest='.'):
+def save_plot(image, template, label=None, logit=None, dest='.'):
     fig = plt.figure()
     sub_plt = fig.add_subplot(1, 3, 1)
     sub_plt.set_title("Source")
@@ -73,9 +73,10 @@ def save_plot(image, template, label, logit=None, dest='.'):
     sub_plt = fig.add_subplot(1, 3, 2)
     sub_plt.set_title("Template")
     plt.imshow(template)
-    sub_plt = fig.add_subplot(1, 3, 3)
-    sub_plt.set_title("Ground Truth")
-    plt.imshow(label)
+    if label is not None:
+        sub_plt = fig.add_subplot(1, 3, 3)
+        sub_plt.set_title("Ground Truth")
+        plt.imshow(label)
     if logit is not None:
         logit = tf.squeeze(create_label_mask(logit), axis=-1)
         sub_plt = fig.add_subplot(1, 3, 4)

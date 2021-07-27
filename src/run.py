@@ -1,13 +1,15 @@
 from src.training import train
+from src.test import test
 from src.dataset import get_dataset
-from src import EPOCHS
+from src import EPOCHS, DATA_PATH
 
 
 def run_train():
-    training_set, validation_set, train_step, val_step= get_dataset(show=False)
-    train(training_set, validation_set, EPOCHS, train_step, val_step, plot_path='plot', image_path='image', early_stopping=15)
+    training_set, validation_set, train_step, val_step = get_dataset(show=False)
+    train(training_set, validation_set, EPOCHS, train_step, val_step,
+          plot_path='plot', image_path='image', early_stopping=15)
 
 
-# TODO
-def run_test():
-    pass
+def run_test(test_path=DATA_PATH):
+    test_set = get_dataset(data_path=test_path, batch_size=1, split_perc=1, show=False)
+    test(test_set, output_path='image')
