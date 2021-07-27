@@ -84,7 +84,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         i = 0
         for image, template, label in validation_set.take(3):
             prediction = siam_model.forward([image, template])
-            save_plot(prediction[i], template[i], label[i], os.path.join(plot_path, str(epoch)+'_'+str(i)+'.jpg'))
+            save_plot(prediction[i], template[i], label[i], os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1
 
         siam_model.history['train_loss'].append(train_loss.result().numpy())
