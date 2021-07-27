@@ -88,6 +88,8 @@ def save_plot(image, template, label=None, logit=None, dest='.'):
         sub_plt.set_title("Prediction")
         plt.imshow(logit)
     plt.savefig(dest)
+    plt.pause(0.001)
+    plt.close()
 
 
 def show_dataset_plot(dataset, samples):
