@@ -26,7 +26,7 @@ class Siamese(tf.keras.Model):
 
     @tf.function
     def forward(self, *args, **kwargs):
-        with tf.device(self.device):
+        with tf.device(self._device):
             output = self.call(*args, **kwargs)
         return output
 
