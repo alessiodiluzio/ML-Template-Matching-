@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 
+from src import BATCH_SIZE, IMAGE_DIM, CROP_SIZE
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
 from src.loss import compute_cross_entropy_loss
@@ -14,7 +15,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
     device = get_device()
     siam_model = Siamese(checkpoint_dir="../checkpoint", device=device)
-
+    siam_model.build(input_shape=[(BATCH_SIZE, IMAGE_DIM, IMAGE_DIM, 3), (BATCH_SIZE, CROP_SIZE, CROP_SIZE, 3)])
     best_f1score = 0
     last_improvement = 0
 
