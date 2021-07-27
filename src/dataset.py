@@ -1,8 +1,8 @@
 """ Implementation of Tensorflow input pipeline for Template Matching"""
 
 import tensorflow as tf
-from src import CHANNELS, IMAGE_DIM, NUM_BOXES, CROP_BOX, DATA_PATH, BATCH_SIZE, X_MIN, Y_MIN, CROP_SIZE, OUTPUT_DIM
-from src.utils import make_box_representation, get_filenames, show_dataset_plot, save_dataset_plot
+from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, X_MIN, Y_MIN, CROP_SIZE, OUTPUT_DIM
+from src.utils import make_box_representation, get_filenames, show_dataset_plot
 
 
 @tf.function

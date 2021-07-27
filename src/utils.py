@@ -20,6 +20,7 @@ def get_device():
         device = 'gpu:0'
     return device
 
+
 def make_box_representation(boxes, outer_box_width):
 
     x_max = boxes[X_MAX]
@@ -77,6 +78,7 @@ def save_plot(image, template, label, logit=None, dest='.'):
     plt.imshow(label)
     if logit is not None:
         logit = tf.squeeze(create_label_mask(logit), axis=-1)
+        sub_plt = fig.add_subplot(1, 3, 4)
         sub_plt.set_title("Prediction")
         plt.imshow(logit)
     plt.savefig(dest)
@@ -96,40 +98,24 @@ def save_dataset_plot(dataset, samples, dest):
         i += 1
 
 
-def get_val_metric(metric_name, val_metrics):
-    for m in val_metrics:
-        if metric_name in m:
-            return m
-
-
-# TODO DA RIFARE
-def plot_metrics(model_history, epochs, save_path):
-    l_epochs = epochs
-    epochs = range(epochs)
-    train_metrics = []
-    val_metrics = []
-    for key in model_history:
-        if 'train' in key:
-            train_metrics.append(key)
-        else:
-            val_metrics.append(key)
-    for metric in train_metrics:
-        metric_name = metric.split('_')[1]
-        mv = model_history[get_val_metric(metric_name, val_metrics)]
-        mt = model_history[metric]
-        labelt = 'Training'
-        labelv = 'Validation'
+def plot_metrics(model_history, save_path):
+    metric_names = [key.split('_')[1] for key in model_history if 'train' in key]
+    for metric_name in metric_names:
+        mv = model_history['val_'+metric_name]
+        mt = model_history['train_'+metric_name]
+        label_t = 'Training'
+        label_v = 'Validation'
         plt.figure()
-        colorv = 'red'
-        colort = 'blue'
-        plt.plot(epochs, mt, color=colort, linestyle='-', label=labelt + ' ' + metric_name)
-        plt.plot(epochs, mv, color=colorv, linestyle='-', label=labelv + ' ' + metric_name)
+        color_v = 'red'
+        color_t = 'blue'
+        plt.plot(range(len(mt)), mt, color=color_t, linestyle='-', label=label_t + ' ' + metric_name)
+        plt.plot(range(len(mv)), mv, color=color_v, linestyle='-', label=label_v + ' ' + metric_name)
         plt.title(metric_name)
         plt.xlabel('Epoch')
         plt.ylabel(metric_name + ' value')
         plt.ylim([0, 1])
         plt.legend()
-        plt.savefig(os.path.join(save_path, metric_name + '_' + str(l_epochs) + '.jpg'))
+        plt.savefig(os.path.join(save_path, metric_name + '_' + str(len(mv)) + '.jpg'))
         plt.pause(0.001)
         plt.close()
 

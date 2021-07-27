@@ -1,8 +1,6 @@
-import numpy as np
 import tensorflow as tf
 import os
 
-from src import BATCH_SIZE, IMAGE_DIM, CROP_SIZE
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
 from src.loss import compute_cross_entropy_loss

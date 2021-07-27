@@ -11,7 +11,7 @@ class Siamese(tf.keras.Model):
         super(Siamese, self).__init__(name='Siamese')
         self._checkpoint_dir = os.path.join(checkpoint_dir, self.name)
         self._device = device
-        self._alexnet_encoder = AlexnetEncoder()
+        self._alex_net_encoder = AlexnetEncoder()
         self._balance_factor = get_balance_factor()
         self._correlation_filter = CorrelationFilter()
 
@@ -44,16 +44,16 @@ class Siamese(tf.keras.Model):
         return cls(**config)
 
     def save_model(self):
-        tf.saved_model.save(self._alexnet_encoder, os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
+        tf.saved_model.save(self._alex_net_encoder, os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
         tf.saved_model.save(self._correlation_filter, os.path.join(self._checkpoint_dir, self._correlation_filter.name))
 
     def load_model(self):
-        del self._alexnet_encoder
-        self._alexnet_encoder = tf.keras.models.load_model\
-            (os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
+        del self._alex_net_encoder
+        self._alex_net_encoder = tf.keras.models.load_model(os.path.join(self._checkpoint_dir,
+                                                                         self._alex_net_encoder.name))
         del self._correlation_filter
-        self._correlation_filter = tf.keras.models.load_model\
-            (os.path.join(self._checkpoint_dir, self._correlation_filter.name))
+        self._correlation_filter = tf.keras.models.load_model(os.path.join(self._checkpoint_dir,
+                                                                           self._correlation_filter.name))
 
 
 class AlexnetEncoder(tf.keras.Model):
