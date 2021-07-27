@@ -104,4 +104,4 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         if early_stopping is not None and last_improvement >= early_stopping:
             break
 
-    plot_metrics(siam_model.history, epoch, plot_path)
+    plot_metrics(siam_model.history, plot_path)
