@@ -76,8 +76,8 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
             accuracy_value = accuracy(logits, label)
 
             val_loss(loss)
-            val_f1score(f1score)
-            val_accuracy(accuracy)
+            val_f1score(f1score_value)
+            val_accuracy(accuracy_value)
             metrics = [('val_loss', loss), ("val_f1", f1score_value), ("val_acc", accuracy_value)]
             val_progbar.update(b + 1, metrics)
 
