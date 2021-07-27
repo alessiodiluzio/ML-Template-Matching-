@@ -20,6 +20,10 @@ class Siamese(tf.keras.Model):
         net_final = self._correlation_filter([x, z])
         return net_final
 
+    def build(self, input_shape):
+        super(Siamese, self).build(input_shape)
+        self._alexnet_encoder.build(input_shape)
+
     @tf.function
     def forward(self, *args, **kwargs):
         with tf.device(self.device):
