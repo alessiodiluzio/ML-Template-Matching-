@@ -16,7 +16,7 @@ class Siamese(tf.keras.Model):
         self._correlation_filter = CorrelationFilter()
 
     def call(self, input_tensor, training=False, **kwargs):
-        x, z = self._alexnet_encoder(input_tensor, training)
+        x, z = self._alex_net_encoder(input_tensor, training)
         net_final = self._correlation_filter([x, z])
         return net_final
 
