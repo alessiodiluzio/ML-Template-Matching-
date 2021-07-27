@@ -48,8 +48,16 @@ class Siamese(tf.keras.Model):
         return cls(**config)
 
     def save_model(self):
-        pass
-        # self.save(self._checkpoint_dir)
+        tf.saved_model.save(self._alexnet_encoder, os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
+        tf.saved_model.save(self._correlation_filter, os.path.join(self._checkpoint_dir, self._correlation_filter.name))
+
+    def load_model(self):
+        del self._alexnet_encoder
+        self._alexnet_encoder = tf.keras.models.load_model\
+            (os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
+        del self._correlation_filter
+        self._correlation_filter = tf.keras.models.load_model\
+            (os.path.join(self._checkpoint_dir, self._correlation_filter.name))
 
 
 class AlexnetEncoder(tf.keras.Model):
@@ -86,3 +94,5 @@ class AlexnetEncoder(tf.keras.Model):
         x, z = self.conv4([x, z], training)
         x, z = self.conv5([x, z], training)
         return x, z
+
+
