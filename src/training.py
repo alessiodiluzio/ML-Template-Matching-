@@ -24,7 +24,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
     siam_model.history = {'train_loss': [], 'val_loss': [], 'train_f1score': [],
                           'val_f1score': [], 'train_acc': [], 'val_acc': []}
     balance_factor = get_balance_factor()
-
+    epoch = 0
     for epoch in range(epochs):
         clear_output()
 
