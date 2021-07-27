@@ -66,20 +66,25 @@ def create_label_mask(label_mask):
 
 
 def save_plot(image, template, label=None, logit=None, dest='.'):
+    n_plot = 2
+    if label is not None:
+        n_plot += 1
+    if logit is not None:
+        n_plot += 1
     fig = plt.figure()
-    sub_plt = fig.add_subplot(1, 3, 1)
+    sub_plt = fig.add_subplot(1, n_plot, 1)
     sub_plt.set_title("Source")
     plt.imshow(image)
-    sub_plt = fig.add_subplot(1, 3, 2)
+    sub_plt = fig.add_subplot(1, n_plot, 2)
     sub_plt.set_title("Template")
     plt.imshow(template)
     if label is not None:
-        sub_plt = fig.add_subplot(1, 3, 3)
+        sub_plt = fig.add_subplot(1, n_plot, 3)
         sub_plt.set_title("Ground Truth")
         plt.imshow(label)
     if logit is not None:
         logit = tf.squeeze(create_label_mask(logit), axis=-1)
-        sub_plt = fig.add_subplot(1, 3, 4)
+        sub_plt = fig.add_subplot(1, n_plot, 4)
         sub_plt.set_title("Prediction")
         plt.imshow(logit)
     plt.savefig(dest)
