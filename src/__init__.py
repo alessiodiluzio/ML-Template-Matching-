@@ -1,5 +1,5 @@
 # PATH
-DATA_PATH = 'data/COCO'
+DATA_PATH = 'samples'
 
 # PREPROCESSING
 IMAGE_DIM = 256
