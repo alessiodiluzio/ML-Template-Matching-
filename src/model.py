@@ -44,7 +44,7 @@ class Siamese(tf.keras.Model):
         return cls(**config)
 
     def save_model(self):
-        tf.saved_model.save(self._alex_net_encoder, os.path.join(self._checkpoint_dir, self._alexnet_encoder.name))
+        tf.saved_model.save(self._alex_net_encoder, os.path.join(self._checkpoint_dir, self._alex_net_encoder.name))
         tf.saved_model.save(self._correlation_filter, os.path.join(self._checkpoint_dir, self._correlation_filter.name))
 
     def load_model(self):
