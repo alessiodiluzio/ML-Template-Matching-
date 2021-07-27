@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 import os
 
@@ -16,6 +17,11 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
     device = get_device()
     siam_model = Siamese(checkpoint_dir="../checkpoint", device=device)
     siam_model.build(input_shape=[(BATCH_SIZE, IMAGE_DIM, IMAGE_DIM, 3), (BATCH_SIZE, CROP_SIZE, CROP_SIZE, 3)])
+    x = np.random.uniform((BATCH_SIZE, IMAGE_DIM, IMAGE_DIM, 3))
+    z = np.random.uniform((BATCH_SIZE, CROP_SIZE, CROP_SIZE, 3))
+    # siam_model.call(x, z)
+    tf.saved_model.save(siam_model, 'checkpoint')
+
     best_f1score = 0
     last_improvement = 0
 
@@ -106,4 +112,4 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         if early_stopping is not None and last_improvement >= early_stopping:
             break
 
-    plot_metrics(siam_model.history, epochs, plot_path)
+    plot_metrics(siam_model.history, epoch, plot_path)
