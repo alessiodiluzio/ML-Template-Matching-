@@ -19,5 +19,5 @@ def logistic_loss(logits, label, balance_factor, training=True):
         weights = 1 / balance_factor * label_true + 1 / (1 - balance_factor) * label_false
     log_loss = tf.compat.v1.losses.log_loss(labels=label, predictions=logits, weights=weights,
                                             reduction='none')
-    log_loss = tf.reduce_sum(log_loss) * (1 / (logits[1] * logits[2]))
+    log_loss = tf.reduce_mean(log_loss)
     return log_loss
