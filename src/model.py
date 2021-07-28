@@ -30,10 +30,9 @@ class Siamese(tf.keras.Model):
         with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
-                # loss = compute_cross_entropy_loss(logits, label, self._balance_factor, training=True)
                 loss = loss_fn(logits, label, self._balance_factor, training=True)
-            gradients = tape.gradient(loss, self.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+            #gradients = tape.gradient(loss, self.trainable_variables)
+            #optimizer.apply_gradients(zip(gradients, self.trainable_variables))
             return logits, loss
 
     def get_config(self):
