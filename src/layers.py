@@ -94,8 +94,8 @@ class CorrelationFilter(tf.keras.layers.Layer):
         # self.reshape = tf.keras.layers.Lambda(reshape)
         # self.split = tf.keras.layers.Lambda(split_fun)
         # self.concatenate = tf.keras.layers.Concatenate(axis=0)
-        self.conv = tf.keras.layers.Conv2D(filters=2, kernel_size=(1, 1), strides=1,
-                                           padding='SAME', activation=None, trainable=True)
+        # self.conv = tf.keras.layers.Conv2D(filters=2, kernel_size=(1, 1), strides=1,
+        #                                    padding='SAME', activation=None, trainable=True)
         self.b = 0
 
     def build(self, input_shape):
@@ -124,9 +124,12 @@ class CorrelationFilter(tf.keras.layers.Layer):
 
         net_final = tf.split(net_final, BATCH_SIZE, axis=3)
         net_final = tf.concat(net_final, axis=0)
-        # final is [B, Hf, Wf, C]
+        # final is [B, Hf, Wf, 1]
 
-        net_final = self.conv(net_final)
+        net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
+        # final is [B, Hf, Wf, 1]
+
+        # net_final = self.conv(net_final)
         # final is [B, Hf, Wf, 2]
 
         return net_final

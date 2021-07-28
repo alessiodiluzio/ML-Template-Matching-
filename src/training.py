@@ -3,14 +3,13 @@ import os
 
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
-from src.loss import compute_cross_entropy_loss
 from src.utils import save_plot, plot_metrics, get_balance_factor, get_device
 from src import LEARNING_RATE
 from IPython.display import clear_output
 
 
 def train(training_set, validation_set, epochs, train_steps, val_steps, plot_path, image_path,
-          optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=None):
+          loss_fn, optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=None):
 
     device = get_device()
     siam_model = Siamese(checkpoint_dir="checkpoint", device=device)
@@ -39,9 +38,10 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         print("\nTRAIN")
 
         for b, (image, template, label) in enumerate(training_set):
-            one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+            # one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+            label = tf.expand_dims(label, axis=3)
             label = tf.cast(label, dtype=tf.float32)
-            logits, loss = siam_model.forward_backward_pass([image, template], one_hot_labels, optimizer)
+            logits, loss = siam_model.forward_backward_pass([image, template], label, optimizer, loss_fn)
             precision, recall = precision_recall(logits, label)
             f1score_value = f1score(precision, recall)
             accuracy_value = accuracy(logits, label)
@@ -63,11 +63,12 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         for b, (image, template, label) in enumerate(validation_set):
 
-            one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+            # one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+            label = tf.expand_dims(label, axis=3)
+            label = tf.cast(label, dtype=tf.float32)
             label = tf.cast(label, dtype=tf.float32)
             logits = siam_model.forward([image, template])
-            loss = compute_cross_entropy_loss(logits, one_hot_labels,
-                                              balance_factor=balance_factor, training=False)
+            loss = loss_fn(logits, label, balance_factor=balance_factor, training=False)
 
             precision, recall = precision_recall(logits, label)
             f1score_value = f1score(precision, recall)

@@ -139,5 +139,6 @@ def get_dataset(data_path=DATA_PATH, batch_size=BATCH_SIZE, split_perc=0.7, show
     validation_step = int(len(validation_images)/BATCH_SIZE)  # validation step = | VALIDATION_SET |/batch_size
     if show:
         show_dataset_plot(training_set, 3)
+
         # save_dataset_plot(training_set, 3, 'checkpoint')
     return training_set, validation_set, training_step, validation_step

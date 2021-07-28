@@ -32,16 +32,16 @@ def make_box_representation(boxes, outer_box_width):
 
     inner_box = tf.ones((y, x))
 
-    left_padding = tf.zeros((y, x_min))
-    right_padding = tf.zeros((y, outer_box_width - x_max))
+    left_padding = tf.ones((y, x_min)) * -1
+    right_padding = tf.ones((y, outer_box_width - x_max)) * -1
 
     ret = tf.concat([left_padding, inner_box, right_padding], axis=1)
 
-    top_padding = tf.zeros((y_min, outer_box_width))
-    bottom_padding = tf.zeros((outer_box_width - y_max, outer_box_width))
+    top_padding = tf.ones((y_min, outer_box_width)) * -1
+    bottom_padding = tf.ones((outer_box_width - y_max, outer_box_width)) * -1
 
     ret = tf.concat([top_padding, ret, bottom_padding], axis=0)
-    ret = tf.cast(ret, dtype=tf.uint8)
+    # ret = tf.cast(ret, dtype=tf.int8)
     return ret
 
 

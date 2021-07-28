@@ -2,12 +2,13 @@ from src.training import train
 from src.test import test
 from src.dataset import get_dataset
 from src import EPOCHS, DATA_PATH
+from src.loss import logistic_loss
 
 
 def run_train():
-    training_set, validation_set, train_step, val_step = get_dataset(show=False)
+    training_set, validation_set, train_step, val_step = get_dataset(show=True)
     train(training_set, validation_set, EPOCHS, train_step, val_step,
-          plot_path='plot', image_path='image', early_stopping=15)
+          plot_path='plot', image_path='image', loss_fn=logistic_loss, early_stopping=15)
 
 
 def run_test(test_path=DATA_PATH):
