@@ -80,6 +80,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         i = 0
         for image, template, label in validation_set.take(3):
             prediction = siam_model.forward([image, template])
+            prediction = tf.nn.sigmoid(prediction)
             save_plot(image[i], template[i], label[i], logit=prediction[i],
                       dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1
