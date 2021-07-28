@@ -37,7 +37,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         print("\nTRAIN")
 
         for b, (image, template, label) in enumerate(training_set):
-            # one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
+
             label = tf.expand_dims(label, axis=3)
             label = tf.cast(label, dtype=tf.float32)
             logits, loss = siam_model.forward_backward_pass([image, template], label, optimizer, loss_fn)
@@ -62,7 +62,6 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         for b, (image, template, label) in enumerate(validation_set):
 
-            # one_hot_labels = tf.one_hot(indices=label, depth=2, dtype=tf.float32)
             label = tf.expand_dims(label, axis=3)
             label = tf.cast(label, dtype=tf.float32)
             label = tf.cast(label, dtype=tf.float32)

@@ -8,7 +8,7 @@ from src.loss import logistic_loss, softmax_cross_entropy_loss, sigmoid_cross_en
 
 
 def run_train():
-    training_set, validation_set, train_step, val_step = get_dataset(show=True)
+    training_set, validation_set, train_step, val_step = get_dataset(show=False)
     train(training_set, validation_set, EPOCHS, train_step, val_step,
           plot_path='plot', image_path='image', loss_fn=logistic_loss,
           optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15)

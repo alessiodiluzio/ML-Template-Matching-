@@ -124,7 +124,7 @@ class CorrelationFilter(tf.keras.layers.Layer):
 
         net_final = tf.split(net_final, BATCH_SIZE, axis=3)
         net_final = tf.concat(net_final, axis=0)
-        # final is [B, Hf, Wf, 1]
+        # final is [B, Hf, Wf, C]
 
         net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
         # final is [B, Hf, Wf, 1]
