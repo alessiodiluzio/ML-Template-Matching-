@@ -4,12 +4,11 @@ import os
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
 from src.utils import save_plot, plot_metrics, get_balance_factor, get_device
-from src import LEARNING_RATE
 from IPython.display import clear_output
 
 
 def train(training_set, validation_set, epochs, train_steps, val_steps, plot_path, image_path,
-          loss_fn, optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=None):
+          loss_fn, optimizer, early_stopping=None):
 
     device = get_device()
     siam_model = Siamese(checkpoint_dir="checkpoint", device=device)

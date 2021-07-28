@@ -1,7 +1,6 @@
 import tensorflow as tf
 import os
 from src.layers import SiameseConv2D, CorrelationFilter
-from src.loss import compute_cross_entropy_loss, logistic_loss
 from src.utils import get_balance_factor
 
 
