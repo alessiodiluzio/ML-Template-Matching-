@@ -49,7 +49,7 @@ def extract_crop(image, boxes):
     :return: Source image, the crop extracted from source image, the coordinates of the box.
     """
     # box_indices = [NUM_BOXES-1]
-    tmp_boxes = boxes/255
+    # tmp_boxes = boxes/255
     # tmp_boxes = tf.expand_dims(tmp_boxes, axis=0)
     # tmp_img = tf.expand_dims(image, axis=0)
     # template = tf.image.crop_and_resize(tmp_img, tmp_boxes, box_indices, CROP_BOX)
@@ -60,7 +60,7 @@ def extract_crop(image, boxes):
     offset_height = tf.cast(boxes[Y_MIN]-1, dtype=tf.int32)
     offset_height = tf.cond(tf.less(offset_height, 0), lambda: tf.add(offset_height, 1), lambda: offset_height)
 
-    template = tf.image.pad_to_bounding_box(template[0], offset_height, offset_width, IMAGE_DIM, IMAGE_DIM)
+    template = tf.image.pard_to_bounding_box(template[0], offset_height, offset_width, IMAGE_DIM, IMAGE_DIM)
     """
     begin = tf.stack([tf.cast(boxes[X_MIN], dtype=tf.int32), tf.cast(boxes[Y_MIN], dtype=tf.int32), 0], axis=0)
     template = tf.slice(image, begin, size=[CROP_SIZE, CROP_SIZE, 3])

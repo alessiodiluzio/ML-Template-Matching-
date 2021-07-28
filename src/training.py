@@ -20,7 +20,6 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
     siam_model.history = {'train_loss': [], 'val_loss': [], 'train_f1score': [],
                           'val_f1score': [], 'train_acc': [], 'val_acc': []}
     balance_factor = get_balance_factor()
-    epoch = 0
     for epoch in range(epochs):
         clear_output()
 
@@ -81,7 +80,8 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         i = 0
         for image, template, label in validation_set.take(3):
             prediction = siam_model.forward([image, template])
-            save_plot(image[i], template[i], label[i], logit=prediction[i], dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
+            save_plot(image[i], template[i], label[i], logit=prediction[i],
+                      dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1
 
         siam_model.history['train_loss'].append(train_loss.result().numpy())
