@@ -83,7 +83,7 @@ def save_plot(image, template, label=None, logit=None, dest='.'):
         sub_plt.set_title("Ground Truth")
         plt.imshow(label)
     if logit is not None:
-        logit = tf.squeeze(create_label_mask(logit), axis=-1)
+        logit = tf.squeeze(logit, axis=-1)
         sub_plt = fig.add_subplot(1, n_plot, 4)
         sub_plt.set_title("Prediction")
         plt.imshow(logit)
