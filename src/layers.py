@@ -95,7 +95,7 @@ class CorrelationFilter(tf.keras.layers.Layer):
         # self.split = tf.keras.layers.Lambda(split_fun)
         # self.concatenate = tf.keras.layers.Concatenate(axis=0)
         # self.conv = tf.keras.layers.Conv2D(filters=2, kernel_size=(1, 1), strides=1,
-        #                                    padding='SAME', activation=None, trainable=True)
+        #                                   padding='SAME', activation=None, trainable=True)
         self.b = 0
 
     def build(self, input_shape):
