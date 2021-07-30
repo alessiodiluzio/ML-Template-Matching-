@@ -1,8 +1,28 @@
 import os
 import tensorflow as tf
+import cv2
 
 from matplotlib import pyplot as plt
 from src import X_MIN, X_MAX, Y_MIN, Y_MAX, IMAGE_DIM, CROP_SIZE
+
+
+def bounding_box_from_score_map(prediction, image):
+    # Grayscale then Otsu's threshold
+    #image = cv2.imread('1.png')
+    gray = cv2.cvtColor(prediction, cv2.COLOR_BGR2GRAY)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+
+    # Find contours
+    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    for c in cnts:
+        x, y, w, h = cv2.boundingRect(c)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
+
+    cv2.imwrite('image', image)
+    cv2.imwrite('thresh', thresh)
+    # cv2.imshow('image', image)
+    # cv2.waitKey()
 
 
 def get_filenames(path):

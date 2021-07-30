@@ -15,5 +15,5 @@ def run_train():
 
 
 def run_test(test_path=DATA_PATH):
-    test_set = get_dataset(data_path=test_path, batch_size=1, split_perc=1, show=False)
-    test(test_set, output_path='image')
+    training_set, validation_set, train_step, val_step = get_dataset(data_path=test_path, batch_size=1, split_perc=1, show=False)
+    test(validation_set, output_path='image')
