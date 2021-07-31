@@ -37,17 +37,18 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         for b, (image, template, label) in enumerate(training_set):
 
-            label = tf.expand_dims(label, axis=3)
-            label = tf.cast(label, dtype=tf.float32)
             logits, loss = siam_model.forward_backward_pass([image, template], label, optimizer, loss_fn)
 
             precision, recall = precision_recall(logits, label)
             f1score_value = f1score(precision, recall)
             accuracy_value = accuracy(logits, label)
+
             train_loss(loss)
             train_f1score(f1score_value)
             train_accuracy(accuracy_value)
+
             metrics = [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
+
             train_progbar.update(b + 1, metrics)
 
         val_loss = tf.metrics.Mean('val_loss')
@@ -62,8 +63,6 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         for b, (image, template, label) in enumerate(validation_set):
 
-            label = tf.expand_dims(label, axis=3)
-            label = tf.cast(label, dtype=tf.float32)
             logits = siam_model.forward([image, template])
             loss = loss_fn(logits, label, balance_factor=balance_factor, training=False)
 
@@ -74,7 +73,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
             val_loss(loss)
             val_f1score(f1score_value)
             val_accuracy(accuracy_value)
+
             metrics = [('val_loss', loss), ("val_f1", f1score_value), ("val_acc", accuracy_value)]
+
             val_progbar.update(b + 1, metrics)
 
         i = 0

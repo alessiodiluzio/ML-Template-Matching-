@@ -1,7 +1,8 @@
 import tensorflow as tf
 import os
-from src.layers import SiameseConv2D, CorrelationFilter
-from src.utils import get_balance_factor
+from src.layers import SiameseConv2D, CorrelationFilter, BoundingBoxRegression
+from src.utils import get_balance_factor, make_box_representation
+from src import IMAGE_DIM, BATCH_SIZE
 
 
 class Siamese(tf.keras.Model):
@@ -13,10 +14,12 @@ class Siamese(tf.keras.Model):
         self._alex_net_encoder = AlexnetEncoder()
         self._balance_factor = get_balance_factor()
         self._correlation_filter = CorrelationFilter()
+        self._bounding_box_regression = BoundingBoxRegression()
 
     def call(self, input_tensor, training=False, **kwargs):
         x, z = self._alex_net_encoder(input_tensor, training)
-        net_final = self._correlation_filter([x, z])
+        corr = self._correlation_filter([x, z])
+        net_final = self._bounding_box_regression(corr)
         return net_final
 
     @tf.function
@@ -30,7 +33,8 @@ class Siamese(tf.keras.Model):
         with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
-                loss = loss_fn(logits, label, self._balance_factor, training=True)
+                logits = tf.map_fn(lambda x: make_box_representation(x, IMAGE_DIM), logits)
+                loss = loss_fn(logits, label, activation='softmax', balance_factor=self._balance_factor, training=True)
             gradients = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(gradients, self.trainable_variables))
             return logits, loss
@@ -45,14 +49,15 @@ class Siamese(tf.keras.Model):
     def save_model(self):
         tf.saved_model.save(self._alex_net_encoder, os.path.join(self._checkpoint_dir, self._alex_net_encoder.name))
         tf.saved_model.save(self._correlation_filter, os.path.join(self._checkpoint_dir, self._correlation_filter.name))
+        tf.saved_model.save(self._bounding_box_regression, os.path.join(self._checkpoint_dir, self._bounding_box_regression.name))
 
     def load_model(self):
-        del self._alex_net_encoder
         self._alex_net_encoder = tf.keras.models.load_model(os.path.join(self._checkpoint_dir,
                                                                          self._alex_net_encoder.name))
-        del self._correlation_filter
         self._correlation_filter = tf.keras.models.load_model(os.path.join(self._checkpoint_dir,
                                                                            self._correlation_filter.name))
+        self._bounding_box_regression = tf.keras.models.load_model(os.path.join(self._checkpoint_dir,
+                                                                                self._bounding_box_regression.name))
 
 
 class AlexnetEncoder(tf.keras.Model):

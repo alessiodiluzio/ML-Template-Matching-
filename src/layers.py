@@ -87,6 +87,7 @@ def reshape(inputs):
 
 
 class CorrelationFilter(tf.keras.layers.Layer):
+
     def __init__(self):
         super(CorrelationFilter, self).__init__()
 
@@ -113,6 +114,7 @@ class CorrelationFilter(tf.keras.layers.Layer):
         z = tf.transpose(inputs[1], perm=[1, 2, 0, 3])
         # z, x are [H, W, B, C]
 
+
         x = tf.reshape(x, (1, IMAGE_OUTPUT_DIM, IMAGE_OUTPUT_DIM, BATCH_SIZE * OUTPUT_CHANNELS))
         # x is [1, Hx, Wx, B*C]
 
@@ -125,12 +127,29 @@ class CorrelationFilter(tf.keras.layers.Layer):
         net_final = tf.split(net_final, BATCH_SIZE, axis=3)
         net_final = tf.concat(net_final, axis=0)
         # final is [B, Hf, Wf, C]
-
-        net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
+        # net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
         # final is [B, Hf, Wf, 1]
-
         # net_final = self.conv(net_final)
         # final is [B, Hf, Wf, 2]
 
         return net_final
+
+
+class BoundingBoxRegression(tf.keras.layers.Layer):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=(1, 1), activation='relu', padding='valid')
+        self.flat = tf.keras.layers.Flatten()
+        self.dense = tf.keras.layers.Dense(units=4, activation=None)
+
+    def __call__(self, inputs, *args, **kwargs):
+        x = self.conv(inputs)
+        x = self.flat(x)
+        bb = self.dense(x)
+        return bb
+
+
+
+
 

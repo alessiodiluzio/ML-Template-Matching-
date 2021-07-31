@@ -1,28 +1,8 @@
 import os
 import tensorflow as tf
-import cv2
 
 from matplotlib import pyplot as plt
 from src import X_MIN, X_MAX, Y_MIN, Y_MAX, IMAGE_DIM, CROP_SIZE
-
-
-def bounding_box_from_score_map(prediction, image):
-    # Grayscale then Otsu's threshold
-    #image = cv2.imread('1.png')
-    gray = cv2.cvtColor(prediction, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-    # Find contours
-    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    for c in cnts:
-        x, y, w, h = cv2.boundingRect(c)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
-
-    cv2.imwrite('image', image)
-    cv2.imwrite('thresh', thresh)
-    # cv2.imshow('image', image)
-    # cv2.waitKey()
 
 
 def get_filenames(path):
@@ -52,16 +32,15 @@ def make_box_representation(boxes, outer_box_width):
 
     inner_box = tf.ones((y, x))
 
-    left_padding = tf.ones((y, x_min)) * -1
-    right_padding = tf.ones((y, outer_box_width - x_max)) * -1
-
+    left_padding = tf.zeros((y, x_min))
+    right_padding = tf.zeros((y, outer_box_width - x_max))
     ret = tf.concat([left_padding, inner_box, right_padding], axis=1)
 
-    top_padding = tf.ones((y_min, outer_box_width)) * -1
-    bottom_padding = tf.ones((outer_box_width - y_max, outer_box_width)) * -1
-
+    top_padding = tf.zeros((y_min, outer_box_width))
+    bottom_padding = tf.zeros((outer_box_width - y_max, outer_box_width))
     ret = tf.concat([top_padding, ret, bottom_padding], axis=0)
-    # ret = tf.cast(ret, dtype=tf.int8)
+    ret = tf.expand_dims(ret, axis=-1)
+    ret = tf.cast(ret, dtype=tf.float32)
     return ret
 
 

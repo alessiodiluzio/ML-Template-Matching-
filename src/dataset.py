@@ -79,9 +79,9 @@ def generate_ground_truth(image, template, boxes):
     :return: Source image, crop, a 1D image that has the same size of source image and it is composed
                 by 'ones' in the pixel that match with crop coordinates, the remaining pixels have value zero
     """
-    tmp_boxes = boxes * (OUTPUT_DIM/IMAGE_DIM)
+    tmp_boxes = boxes #* (OUTPUT_DIM/IMAGE_DIM)
     tmp_boxes = tf.cast(tmp_boxes, dtype=tf.int32)
-    label = make_box_representation(tmp_boxes, OUTPUT_DIM)
+    label = make_box_representation(tmp_boxes, IMAGE_DIM)
     # boxes = tf.stack([boxes[X_MIN], boxes[Y_MIN]], axis=0)
     return image, template, label
 
