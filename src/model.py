@@ -1,21 +1,19 @@
 import tensorflow as tf
 import os
 from src.layers import SiameseConv2D, CorrelationFilter, BoundingBoxRegression
-from src.utils import get_balance_factor, make_prediction
-from src import IMAGE_DIM, BATCH_SIZE
+from src.utils import get_balance_factor
 
 
 class Siamese(tf.keras.Model):
 
-    def __init__(self, checkpoint_dir, device, last_layer_activation):
+    def __init__(self, checkpoint_dir, device):
         super(Siamese, self).__init__(name='Siamese')
         self._checkpoint_dir = os.path.join(checkpoint_dir, self.name)
         self._device = device
         self._alex_net_encoder = AlexnetEncoder()
         self._balance_factor = get_balance_factor()
         self._correlation_filter = CorrelationFilter()
-        self._last_layer_activation = last_layer_activation
-        self._bounding_box_regression = BoundingBoxRegression(self._last_layer_activation)
+        self._bounding_box_regression = BoundingBoxRegression()
 
     def call(self, input_tensor, training=False, **kwargs):
         x, z = self._alex_net_encoder(input_tensor, training)
@@ -34,15 +32,13 @@ class Siamese(tf.keras.Model):
         with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
-                logits = tf.map_fn(lambda logit: make_prediction(logit), logits)
                 loss = loss_fn(label, logits)
             gradients = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(gradients, self.trainable_variables))
             return logits, loss
 
     def get_config(self):
-        return {"checkpoint_dir": self._checkpoint_dir, "device": self._device,
-                "last_layer_activation": self._last_layer_activation}
+        return {"checkpoint_dir": self._checkpoint_dir, "device": self._device}
 
     @classmethod
     def from_config(cls, config, **kwargs):

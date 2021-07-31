@@ -117,7 +117,7 @@ def make_dataset(images_path, batch_size, augmentation=False):
     dataset = dataset.map(load_image)  # 1)
     dataset = dataset.map(preprocess)  # 2)
     dataset = dataset.map(extract_crop)  # 3)
-    dataset = dataset.map(generate_ground_truth)  # 4)
+    # dataset = dataset.map(generate_ground_truth)  # 4)
     if augmentation:
         dataset = dataset.map(perturb)  # 5)
     dataset = dataset.batch(batch_size, drop_remainder=True)

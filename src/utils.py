@@ -29,10 +29,15 @@ def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, o
     x2 = boxes[X_2]
     y2 = boxes[Y_2]
 
-    x1 = tf.cast(x1 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
-    y1 = tf.cast(y1 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
-    x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
-    y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+    # x1 = tf.cast(x1 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+    # y1 = tf.cast(y1 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+    # x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+    # y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+
+    x1 = tf.cast(x1, dtype=tf.int32)
+    x2 = tf.cast(x2, dtype=tf.int32)
+    y1 = tf.cast(y1, dtype=tf.int32)
+    y2 = tf.cast(y2, dtype=tf.int32)
 
     x1_tmp = tf.minimum(x1, x2)
     x2 = tf.maximum(x1, x2)
@@ -42,12 +47,24 @@ def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, o
     y2 = tf.maximum(y1, y2)
     y1 = y1_tmp
 
+    x1 = tf.maximum(0, x1)
+    x1 = tf.minimum(outer_box_dim, x1)
+
+    y1 = tf.maximum(0, y1)
+    y1 = tf.minimum(outer_box_dim, y1)
+
+    x2 = tf.maximum(0, x2)
+    x2 = tf.minimum(outer_box_dim, x2)
+
+    y2 = tf.maximum(0, y2)
+    y2 = tf.minimum(outer_box_dim, y2)
+
     boxes = tf.stack([x1, y1, x2, y2], axis=0)
     prediction = make_label(boxes, outer_box_dim)
     return prediction
 
 
-def make_label(boxes, outer_box_dim, scale=False):
+def make_label(boxes, outer_box_dim=IMAGE_DIM):
 
     x1 = boxes[X_1]
     y1 = boxes[Y_1]
@@ -57,10 +74,11 @@ def make_label(boxes, outer_box_dim, scale=False):
 
     x, y = x2 - x1, y2 - y1
 
-    #x = tf.maximum(0, x)
-    #y = tf.maximum(0, y)
+    x = tf.maximum(0, x)
+    y = tf.maximum(0, y)
 
     inner_box = tf.ones((y, x))
+
     paddings = [[y1, outer_box_dim - y2], [x1, outer_box_dim - x2]]
     ret = tf.pad(inner_box, paddings, mode='CONSTANT')
 
@@ -126,7 +144,6 @@ def show_dataset_plot(dataset, samples):
 def save_dataset_plot(dataset, samples, dest):
     i = 0
     for image, template, label in dataset.take(samples):
-        print(label[i].shape)
         save_plot(image[i], template[i], label[i], os.path.join(dest, str(i)+'.jpg'))
         i += 1
 
