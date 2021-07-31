@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 from src.model import Siamese
-from src.utils import save_plot, get_device
+from src.utils import get_device
 
 
 def test(test_set, output_path):

@@ -3,7 +3,7 @@ import os
 
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
-from src.utils import save_plot, plot_metrics, get_balance_factor, get_device, make_prediction, make_label
+from src.utils import plot, plot_metrics, get_balance_factor, get_device
 from IPython.display import clear_output
 
 
@@ -39,12 +39,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
             logits, loss = siam_model.forward_backward_pass([image, template], labels, optimizer, loss_fn)
 
-            mask_logit = tf.map_fn(lambda logit: make_prediction(logit), logits)
-            mask_label = tf.map_fn(lambda label: make_label(label), labels)
-
-            precision, recall = precision_recall(mask_logit, mask_label)
+            precision, recall = precision_recall(logits, labels)
             f1score_value = f1score(precision, recall)
-            accuracy_value = accuracy(mask_logit, mask_label)
+            accuracy_value = accuracy(logits, labels)
 
             train_loss(loss)
             train_f1score(f1score_value)
@@ -67,14 +64,11 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         for b, (image, template, labels) in enumerate(validation_set):
 
             logits = siam_model.forward([image, template])
-            loss = loss_fn(labels, logits)
+            loss = loss_fn(logits, labels, activation=None, balance_factor=balance_factor, training=False)
 
-            mask_logit = tf.map_fn(lambda logit: make_prediction(logit), logits)
-            mask_label = tf.map_fn(lambda label: make_label(label), labels)
-
-            precision, recall = precision_recall(mask_logit, mask_label)
+            precision, recall = precision_recall(logits, labels)
             f1score_value = f1score(precision, recall)
-            accuracy_value = accuracy(mask_logit, mask_label)
+            accuracy_value = accuracy(logits, labels)
 
             val_loss(loss)
             val_f1score(f1score_value)
@@ -87,8 +81,8 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         i = 0
         for image, template, labels in validation_set.take(3):
             predictions = siam_model.forward([image, template])
-            save_plot(image[i], template[i], make_label(labels[i]), make_prediction(predictions[i]),
-                     dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
+            plot(image[i], template[i], labels[i], predictions[i],
+                 target='save', dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1
 
         siam_model.history['train_loss'].append(train_loss.result().numpy())

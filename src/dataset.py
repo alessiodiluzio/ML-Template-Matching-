@@ -1,8 +1,8 @@
 """ Implementation of Tensorflow input pipeline for Template Matching"""
 
 import tensorflow as tf
-from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, CROP_SIZE, OUTPUT_DIM, X_1, Y_1
-from src.utils import make_label, get_filenames, show_dataset_plot
+from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, CROP_SIZE, X_1, Y_1
+from src.utils import make_label, get_filenames, plot_dataset
 
 
 @tf.function
@@ -27,7 +27,7 @@ def preprocess(image):
     :return: image and the coordinates of a box specified by [x_min, x_max, y_min, y_max].
     """
     image = tf.image.resize(image, [IMAGE_DIM, IMAGE_DIM])
-    image /= 255
+    image = tf.image.per_image_standardization(image)
 
     x1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
     y1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
@@ -83,9 +83,9 @@ def generate_ground_truth(image, template, boxes):
     :return: Source image, crop, a 1D image that has the same size of source image and it is composed
                 by 'ones' in the pixel that match with crop coordinates, the remaining pixels have value zero
     """
-    tmp_boxes = boxes #* (OUTPUT_DIM/IMAGE_DIM)
-    tmp_boxes = tf.cast(tmp_boxes, dtype=tf.int32)
-    label = make_label(tmp_boxes, IMAGE_DIM)
+    # tmp_boxes = boxes * (OUTPUT_DIM/IMAGE_DIM)
+    boxes = tf.cast(boxes, dtype=tf.int32)
+    label = make_label(boxes, IMAGE_DIM)
     # boxes = tf.stack([boxes[X_MIN], boxes[Y_MIN]], axis=0)
     return image, template, label
 
@@ -117,7 +117,7 @@ def make_dataset(images_path, batch_size, augmentation=False):
     dataset = dataset.map(load_image)  # 1)
     dataset = dataset.map(preprocess)  # 2)
     dataset = dataset.map(extract_crop)  # 3)
-    # dataset = dataset.map(generate_ground_truth)  # 4)
+    dataset = dataset.map(generate_ground_truth)  # 4)
     if augmentation:
         dataset = dataset.map(perturb)  # 5)
     dataset = dataset.batch(batch_size, drop_remainder=True)
@@ -142,7 +142,5 @@ def get_dataset(data_path=DATA_PATH, batch_size=BATCH_SIZE, split_perc=0.7, show
     training_step = int(len(training_images)/BATCH_SIZE)  # training step = | TRAINING_SET |/batch_size
     validation_step = int(len(validation_images)/BATCH_SIZE)  # validation step = | VALIDATION_SET |/batch_size
     if show:
-        show_dataset_plot(training_set, 3)
-
-        # save_dataset_plot(training_set, 3, 'checkpoint')
+        plot_dataset(training_set, 3, target='show')
     return training_set, validation_set, training_step, validation_step

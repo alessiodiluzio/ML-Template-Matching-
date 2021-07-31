@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 
+
 def true_positives(predictions, labels):
     return tf.math.count_nonzero(predictions * labels, dtype=tf.float32)
 

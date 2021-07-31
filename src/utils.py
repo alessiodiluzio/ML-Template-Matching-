@@ -21,57 +21,56 @@ def get_device():
     return device
 
 
-def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, outer_box_dim=IMAGE_DIM):
-
-    x1 = boxes[X_1]
-    y1 = boxes[Y_1]
-
-    x2 = boxes[X_2]
-    y2 = boxes[Y_2]
-
-    # x1 = tf.cast(x1 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
-    # y1 = tf.cast(y1 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
-    # x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
-    # y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
-
-    x1 = tf.cast(x1, dtype=tf.int32)
-    x2 = tf.cast(x2, dtype=tf.int32)
-    y1 = tf.cast(y1, dtype=tf.int32)
-    y2 = tf.cast(y2, dtype=tf.int32)
-
-    # x1_tmp = tf.minimum(x1, x2)
-    # x2 = tf.maximum(x1, x2)
-    # x1 = x1_tmp
-
-    # y1_tmp = tf.maximum(y1, y2)
-    # y2 = tf.maximum(y1, y2)
-    # y1 = y1_tmp
-
-    x1 = tf.maximum(0, x1)
-    x1 = tf.minimum(outer_box_dim, x1)
-
-    y1 = tf.maximum(0, y1)
-    y1 = tf.minimum(outer_box_dim, y1)
-
-    x2 = tf.maximum(0, x2)
-    x2 = tf.minimum(outer_box_dim, x2)
-
-    y2 = tf.maximum(0, y2)
-    y2 = tf.minimum(outer_box_dim, y2)
-
-    x1, x2 = tf.cond(tf.greater(x1, x2), lambda: [0, 0], lambda: [x1, x2])
-    y1, y2 = tf.cond(tf.greater(y1, y2), lambda: [0, 0], lambda: [y1, y2])
-
-    boxes = tf.stack([x1, y1, x2, y2], axis=0)
-    prediction = make_label(boxes, outer_box_dim)
-    return prediction
+# def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, outer_box_dim=IMAGE_DIM):
+#
+#     x1 = boxes[X_1]
+#     y1 = boxes[Y_1]
+#
+#     x2 = boxes[X_2]
+#     y2 = boxes[Y_2]
+#
+#     # x1 = tf.cast(x1 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+#     # y1 = tf.cast(y1 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+#     # x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+#     # y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+#
+#     x1 = tf.cast(x1, dtype=tf.int32)
+#     x2 = tf.cast(x2, dtype=tf.int32)
+#     y1 = tf.cast(y1, dtype=tf.int32)
+#     y2 = tf.cast(y2, dtype=tf.int32)
+#
+#     # x1_tmp = tf.minimum(x1, x2)
+#     # x2 = tf.maximum(x1, x2)
+#     # x1 = x1_tmp
+#
+#     # y1_tmp = tf.maximum(y1, y2)
+#     # y2 = tf.maximum(y1, y2)
+#     # y1 = y1_tmp
+#
+#     x1 = tf.maximum(0, x1)
+#     x1 = tf.minimum(outer_box_dim, x1)
+#
+#     y1 = tf.maximum(0, y1)
+#     y1 = tf.minimum(outer_box_dim, y1)
+#
+#     x2 = tf.maximum(0, x2)
+#     x2 = tf.minimum(outer_box_dim, x2)
+#
+#     y2 = tf.maximum(0, y2)
+#     y2 = tf.minimum(outer_box_dim, y2)
+#
+#     x1, x2 = tf.cond(tf.greater(x1, x2), lambda: [0, 0], lambda: [x1, x2])
+#     y1, y2 = tf.cond(tf.greater(y1, y2), lambda: [0, 0], lambda: [y1, y2])
+#
+#     boxes = tf.stack([x1, y1, x2, y2], axis=0)
+#     prediction = make_label(boxes, outer_box_dim)
+#     return prediction
 
 
 def make_label(boxes, outer_box_dim=IMAGE_DIM):
 
     x1 = boxes[X_1]
     y1 = boxes[Y_1]
-
     x2 = boxes[X_2]
     y2 = boxes[Y_2]
 
@@ -80,35 +79,12 @@ def make_label(boxes, outer_box_dim=IMAGE_DIM):
     inner_box = tf.ones((y, x))
 
     paddings = [[y1, outer_box_dim - y2], [x1, outer_box_dim - x2]]
-    ret = tf.pad(inner_box, paddings, mode='CONSTANT')
+    ret = tf.pad(inner_box, paddings, mode='CONSTANT', constant_values=-1)
 
     ret = tf.expand_dims(ret, axis=-1)
     ret = tf.cast(ret, dtype=tf.float32)
-    if ret.shape[0] != ret.shape[1]:
-        return tf.expand_dims(tf.zeros((outer_box_dim, outer_box_dim)), axis=-1)
+
     return ret
-
-
-def show_plot(image, template, label, logit=None):
-    n_plot = 3
-    if logit is not None:
-        n_plot += 1
-    fig = plt.figure()
-    sub_plt = fig.add_subplot(1, n_plot, 1)
-    sub_plt.set_title("Source")
-    plt.imshow(image)
-    sub_plt = fig.add_subplot(1, n_plot, 2)
-    sub_plt.set_title("Template")
-    plt.imshow(template)
-    sub_plt = fig.add_subplot(1, n_plot, 3)
-    sub_plt.set_title("Ground Truth")
-    plt.imshow(label)
-    if logit is not None:
-        logit = tf.squeeze(logit, axis=-1)
-        sub_plt = fig.add_subplot(1, n_plot, 4)
-        sub_plt.set_title("Prediction")
-        plt.imshow(logit)
-    plt.show()
 
 
 def create_label_mask(label_mask):
@@ -117,7 +93,7 @@ def create_label_mask(label_mask):
     return label_mask
 
 
-def save_plot(image, template, label=None, logit=None, dest='.'):
+def plot(image, template, label=None, logit=None, target='save', dest='.'):
     n_plot = 2
     if label is not None:
         n_plot += 1
@@ -139,22 +115,24 @@ def save_plot(image, template, label=None, logit=None, dest='.'):
         sub_plt = fig.add_subplot(1, n_plot, 4)
         sub_plt.set_title("Prediction")
         plt.imshow(logit)
-    plt.savefig(dest)
-    plt.pause(0.001)
-    plt.close()
+    if target == 'save':
+        plt.savefig(dest)
+        plt.pause(0.001)
+        plt.close()
+    elif target == 'show':
+        plt.show()
 
 
-def show_dataset_plot(dataset, samples):
+def get_zero_base_label(labels):
+    label_true = tf.cast((labels + 1) / 2, dtype=tf.int32)
+    label_false = tf.cast((labels - 1) / 2, dtype=tf.int32)
+    return label_true + label_false
+
+
+def plot_dataset(dataset, samples, target='save', dest='.'):
     i = 0
     for image, template, label in dataset.take(samples):
-        show_plot(image[i], template[i], make_label(label[i]))
-        i += 1
-
-
-def save_dataset_plot(dataset, samples, dest):
-    i = 0
-    for image, template, label in dataset.take(samples):
-        save_plot(image[i], template[i], label[i], os.path.join(dest, str(i)+'.jpg'))
+        plot(image[i], template[i], label[i], target=target, dest=os.path.join(dest, str(i)+'.jpg'))
         i += 1
 
 

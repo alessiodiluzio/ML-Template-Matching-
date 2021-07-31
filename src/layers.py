@@ -24,7 +24,7 @@ class SiameseConv2D(tf.keras.layers.Layer):
         b_template_shape = (int((input_shape[1][1] - self.kernel_size[0]) / self.strides) + 1,
                             int((input_shape[1][2] - self.kernel_size[1]) / self.strides) + 1,
                             self.filters)
-        self.W = self.add_weight(name='kernel', shape=w_shape, trainable=True)
+        self.W = self.add_weight(name='kernel', shape=w_shape, trainable=True, initializer=tf.keras.initializers.GlorotUniform)
         self.b_source = self.add_weight(name='bias_s', shape=b_source_shape, initializer='zeros', trainable=True)
         self.b_template = self.add_weight(name='bias_t', shape=b_template_shape, initializer='zeros', trainable=True)
 
@@ -71,36 +71,14 @@ class SiameseConv2D(tf.keras.layers.Layer):
 #         return x
 
 
-def split_fun(inputs):
-    output = tf.split(inputs[0], BATCH_SIZE, axis=3)
-    return output
-
-
-def transpose_fun(inputs):
-    output = tf.transpose(inputs[0], perm=inputs[1])
-    return output
-
-
-def reshape(inputs):
-    output = tf.reshape(inputs[0], inputs[1])
-    return output
-
-
 class CorrelationFilter(tf.keras.layers.Layer):
 
     def __init__(self):
         super(CorrelationFilter, self).__init__()
-
-        # self.transpose = tf.keras.layers.Lambda(transpose_fun)
-        # self.reshape = tf.keras.layers.Lambda(reshape)
-        # self.split = tf.keras.layers.Lambda(split_fun)
-        # self.concatenate = tf.keras.layers.Concatenate(axis=0)
-        # self.conv = tf.keras.layers.Conv2D(filters=2, kernel_size=(1, 1), strides=1,
-        #                                   padding='SAME', activation=None, trainable=True)
         self.b = 0
 
     def build(self, input_shape):
-        b_shape = (1, 17, 17 , BATCH_SIZE * OUTPUT_CHANNELS)
+        b_shape = (1, 17, 17, BATCH_SIZE * OUTPUT_CHANNELS)
         self.b = self.add_weight(name='bias', shape=b_shape, initializer='zeros', trainable=True)
 
     def __call__(self, inputs, *args, **kwargs):
@@ -114,7 +92,6 @@ class CorrelationFilter(tf.keras.layers.Layer):
         z = tf.transpose(inputs[1], perm=[1, 2, 0, 3])
         # z, x are [H, W, B, C]
 
-
         x = tf.reshape(x, (1, IMAGE_OUTPUT_DIM, IMAGE_OUTPUT_DIM, BATCH_SIZE * OUTPUT_CHANNELS))
         # x is [1, Hx, Wx, B*C]
 
@@ -127,27 +104,12 @@ class CorrelationFilter(tf.keras.layers.Layer):
         net_final = tf.split(net_final, BATCH_SIZE, axis=3)
         net_final = tf.concat(net_final, axis=0)
         # final is [B, Hf, Wf, C]
-        # net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
+
+        net_final = tf.expand_dims(tf.reduce_sum(net_final, axis=3), axis=3)
         # final is [B, Hf, Wf, 1]
-        # net_final = self.conv(net_final)
-        # final is [B, Hf, Wf, 2]
 
         return net_final
 
-
-class BoundingBoxRegression(tf.keras.layers.Layer):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=(1, 1), activation='relu', padding='valid')
-        self.flat = tf.keras.layers.Flatten()
-        self.dense = tf.keras.layers.Dense(units=4, activation=None)
-
-    def __call__(self, inputs, *args, **kwargs):
-        x = self.conv(inputs)
-        x = self.flat(x)
-        bb = self.dense(x)
-        return bb
 
 
 
