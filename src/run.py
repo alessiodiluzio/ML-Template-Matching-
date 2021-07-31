@@ -7,7 +7,7 @@ from src.dataset import get_dataset
 
 
 def run_train():
-    training_set, validation_set, train_step, val_step = get_dataset(show=False)
+    training_set, validation_set, train_step, val_step = get_dataset(show=True)
     train(training_set, validation_set, EPOCHS, train_step, val_step,
           plot_path='plot', image_path='image', loss_fn=tf.losses.huber,
           optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15)

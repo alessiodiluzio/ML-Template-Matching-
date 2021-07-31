@@ -33,8 +33,8 @@ class Siamese(tf.keras.Model):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
                 loss = loss_fn(label, logits)
-            gradients = tape.gradient(loss, self.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+            #gradients = tape.gradient(loss, self.trainable_variables)
+            #optimizer.apply_gradients(zip(gradients, self.trainable_variables))
             return logits, loss
 
     def get_config(self):
