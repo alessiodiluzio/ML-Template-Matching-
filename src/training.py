@@ -65,7 +65,6 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
             logits = siam_model.forward([image, template])
             logits = tf.map_fn(lambda logit: make_prediction(logit), logits)
-            print(logits.shape)
             loss = loss_fn(label, logits)
 
             precision, recall = precision_recall(logits, label)
