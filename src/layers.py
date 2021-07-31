@@ -137,11 +137,19 @@ class CorrelationFilter(tf.keras.layers.Layer):
 
 class BoundingBoxRegression(tf.keras.layers.Layer):
 
-    def __init__(self, **kwargs):
+    def __init__(self, last_layer_activation, **kwargs):
         super().__init__(**kwargs)
         self.conv = tf.keras.layers.Conv2D(filters=1, kernel_size=(1, 1), activation='relu', padding='valid')
         self.flat = tf.keras.layers.Flatten()
-        self.dense = tf.keras.layers.Dense(units=4, activation=None)
+        self._last_layer_activation = last_layer_activation
+        self.dense = tf.keras.layers.Dense(units=4, activation=self._last_layer_activation)
+
+    def get_config(self):
+        return {"last_layer_activation": self._last_layer_activation}
+
+    @classmethod
+    def from_config(cls, config, **kwargs):
+        return cls(**config)
 
     def __call__(self, inputs, *args, **kwargs):
         x = self.conv(inputs)

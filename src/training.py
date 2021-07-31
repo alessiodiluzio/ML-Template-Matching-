@@ -8,10 +8,10 @@ from IPython.display import clear_output
 
 
 def train(training_set, validation_set, epochs, train_steps, val_steps, plot_path, image_path,
-          loss_fn, optimizer, early_stopping=None):
+          loss_fn, optimizer, early_stopping=None, last_layer_activation='sigmoid'):
 
     device = get_device()
-    siam_model = Siamese(checkpoint_dir="checkpoint", device=device)
+    siam_model = Siamese(checkpoint_dir="checkpoint", device=device, last_layer_activation=last_layer_activation)
 
     best_f1score = 0
     last_improvement = 0
@@ -64,8 +64,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         for b, (image, template, label) in enumerate(validation_set):
 
             logits = siam_model.forward([image, template])
-            logits = tf.map_fn(lambda x: make_prediction(x), logits)
-            loss = loss_fn(logits, label, balance_factor=balance_factor, training=False)
+            logits = tf.map_fn(lambda logit: make_prediction(logit), logits)
+            print(logits.shape)
+            loss = loss_fn(label, logits)
 
             precision, recall = precision_recall(logits, label)
             f1score_value = f1score(precision, recall)
@@ -81,9 +82,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         i = 0
         for image, template, label in validation_set.take(3):
-            prediction = siam_model.forward([image, template])
-            prediction = tf.map_fn(lambda x: make_prediction(x), prediction)
-            save_plot(image[i], template[i], label[i], logit=prediction[i],
+            predictions = siam_model.forward([image, template])
+            predictions = tf.map_fn(lambda pred: make_prediction(pred), predictions)
+            save_plot(image[i], template[i], label[i], logit=predictions[i],
                       dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1
 

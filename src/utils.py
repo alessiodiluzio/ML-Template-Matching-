@@ -34,9 +34,16 @@ def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, o
     x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
     y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
 
+    x1_tmp = tf.minimum(x1, x2)
+    x2 = tf.maximum(x1, x2)
+    x1 = x1_tmp
+
+    y1_tmp = tf.maximum(y1, y2)
+    y2 = tf.maximum(y1, y2)
+    y1 = y1_tmp
+
     boxes = tf.stack([x1, y1, x2, y2], axis=0)
     prediction = make_label(boxes, outer_box_dim)
-
     return prediction
 
 
@@ -50,18 +57,15 @@ def make_label(boxes, outer_box_dim, scale=False):
 
     x, y = x2 - x1, y2 - y1
 
+    #x = tf.maximum(0, x)
+    #y = tf.maximum(0, y)
+
     inner_box = tf.ones((y, x))
+    paddings = [[y1, outer_box_dim - y2], [x1, outer_box_dim - x2]]
+    ret = tf.pad(inner_box, paddings, mode='CONSTANT')
 
-    left_padding = tf.zeros((y, x1))
-    right_padding = tf.zeros((y, outer_box_dim - x2))
-    ret = tf.concat([left_padding, inner_box, right_padding], axis=1)
-
-    top_padding = tf.zeros((y1, outer_box_dim))
-    bottom_padding = tf.zeros((outer_box_dim - y2, outer_box_dim))
-    ret = tf.concat([top_padding, ret, bottom_padding], axis=0)
     ret = tf.expand_dims(ret, axis=-1)
     ret = tf.cast(ret, dtype=tf.float32)
-
     return ret
 
 

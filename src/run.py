@@ -4,13 +4,12 @@ from src import EPOCHS, DATA_PATH, LEARNING_RATE
 from src.training import train
 from src.test import test
 from src.dataset import get_dataset
-from src.loss import logistic_loss, cross_entropy_loss
 
 
 def run_train():
     training_set, validation_set, train_step, val_step = get_dataset(show=False)
     train(training_set, validation_set, EPOCHS, train_step, val_step,
-          plot_path='plot', image_path='image', loss_fn=logistic_loss,
+          plot_path='plot', image_path='image', loss_fn=tf.keras.losses.BinaryCrossentropy(),
           optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15)
 
 
