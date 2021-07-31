@@ -29,7 +29,7 @@ class Siamese(tf.keras.Model):
 
     @tf.function
     def forward_backward_pass(self, inputs, label, optimizer, loss_fn):
-        with tf.device(self._device):
+       with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
                 loss = loss_fn(logits, label, activation=None, balance_factor=get_balance_factor(), training=True)

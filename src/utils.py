@@ -15,9 +15,9 @@ def get_filenames(path):
 
 
 def get_device():
-    device = 'cpu:0'
+    device = tf.config.list_physical_devices('CPU')[0]
     if len(tf.config.list_physical_devices('GPU')) > 0:
-        device = 'gpu:0'
+        device = tf.config.list_physical_devices('GPU')[0]
     return device
 
 

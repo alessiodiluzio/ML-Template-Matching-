@@ -1,4 +1,6 @@
 import sys
+import tensorflow as tf
+
 from src.run import run_train, run_test
 
 message = 'Usage: python main.py <mode> [-p <data_path>]\n' \
@@ -7,7 +9,8 @@ message = 'Usage: python main.py <mode> [-p <data_path>]\n' \
           '\ttest to run prediction.\n' \
           '-p train/test performed on images contained at data_path.\n'
 
-if __name__ == "__main__":
+
+def main(_):
     arg = sys.argv[1:]
     if len(arg) < 1:
         print(message)
@@ -17,3 +20,11 @@ if __name__ == "__main__":
         run_test()
     else:
         print(message)
+
+
+if __name__ == "__main__":
+    tf.compat.v1.app.run()
+
+
+
+
