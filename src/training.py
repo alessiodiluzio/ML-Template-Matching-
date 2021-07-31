@@ -3,7 +3,7 @@ import os
 
 from src.model import Siamese
 from src.metrics import precision_recall, accuracy, f1score
-from src.utils import save_plot, plot_metrics, get_balance_factor, get_device
+from src.utils import save_plot, plot_metrics, get_balance_factor, get_device, make_prediction
 from IPython.display import clear_output
 
 
@@ -64,6 +64,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         for b, (image, template, label) in enumerate(validation_set):
 
             logits = siam_model.forward([image, template])
+            logits = tf.map_fn(lambda x: make_prediction(x), logits)
             loss = loss_fn(logits, label, balance_factor=balance_factor, training=False)
 
             precision, recall = precision_recall(logits, label)
@@ -81,7 +82,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         i = 0
         for image, template, label in validation_set.take(3):
             prediction = siam_model.forward([image, template])
-            prediction = tf.nn.sigmoid(prediction)
+            prediction = tf.map_fn(lambda x: make_prediction(x), prediction)
             save_plot(image[i], template[i], label[i], logit=prediction[i],
                       dest=os.path.join(image_path, str(epoch)+'_'+str(i)+'.jpg'))
             i += 1

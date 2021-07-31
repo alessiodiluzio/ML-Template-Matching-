@@ -1,7 +1,7 @@
 import tensorflow as tf
 import os
 from src.layers import SiameseConv2D, CorrelationFilter, BoundingBoxRegression
-from src.utils import get_balance_factor, make_box_representation
+from src.utils import get_balance_factor, make_prediction
 from src import IMAGE_DIM, BATCH_SIZE
 
 
@@ -33,7 +33,7 @@ class Siamese(tf.keras.Model):
         with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
-                logits = tf.map_fn(lambda x: make_box_representation(x, IMAGE_DIM), logits)
+                logits = tf.map_fn(lambda x: make_prediction(x, IMAGE_DIM), logits)
                 loss = loss_fn(logits, label, activation='softmax', balance_factor=self._balance_factor, training=True)
             gradients = tape.gradient(loss, self.trainable_variables)
             optimizer.apply_gradients(zip(gradients, self.trainable_variables))

@@ -19,7 +19,7 @@ EPOCHS = 50
 LEARNING_RATE = 0.0000099
 
 # UTILS
-X_MIN = 1
-X_MAX = 3
-Y_MIN = 0
-Y_MAX = 2
+X_1 = 0
+Y_1 = 1
+X_2 = 2
+Y_2 = 3

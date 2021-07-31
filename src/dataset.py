@@ -1,8 +1,8 @@
 """ Implementation of Tensorflow input pipeline for Template Matching"""
 
 import tensorflow as tf
-from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, X_MIN, Y_MIN, CROP_SIZE, OUTPUT_DIM
-from src.utils import make_box_representation, get_filenames, show_dataset_plot
+from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, CROP_SIZE, OUTPUT_DIM, X_1, Y_1
+from src.utils import make_label, get_filenames, show_dataset_plot
 
 
 @tf.function
@@ -27,14 +27,18 @@ def preprocess(image):
     :return: image and the coordinates of a box specified by [x_min, x_max, y_min, y_max].
     """
     image = tf.image.resize(image, [IMAGE_DIM, IMAGE_DIM])
-    image /= IMAGE_DIM
+    image /= 255
+
     x1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
     y1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
+
     x1 = tf.cast(x1, dtype=tf.float32)
     y1 = tf.cast(y1, dtype=tf.float32)
-    y2 = tf.math.add(y1, CROP_SIZE)
+
     x2 = tf.math.add(x1, CROP_SIZE)
-    boxes = tf.concat([y1, x1, y2, x2], axis=0)
+    y2 = tf.math.add(y1, CROP_SIZE)
+
+    boxes = tf.concat([x1, y1, x2, y2], axis=0)
     boxes = tf.convert_to_tensor(boxes, dtype=tf.float32)
     return image, boxes
 
@@ -60,9 +64,9 @@ def extract_crop(image, boxes):
     offset_height = tf.cast(boxes[Y_MIN]-1, dtype=tf.int32)
     offset_height = tf.cond(tf.less(offset_height, 0), lambda: tf.add(offset_height, 1), lambda: offset_height)
 
-    template = tf.image.pard_to_bounding_box(template[0], offset_height, offset_width, IMAGE_DIM, IMAGE_DIM)
+    template = tf.image.pad_to_bounding_box(template[0], offset_height, offset_width, IMAGE_DIM, IMAGE_DIM)
     """
-    begin = tf.stack([tf.cast(boxes[X_MIN], dtype=tf.int32), tf.cast(boxes[Y_MIN], dtype=tf.int32), 0], axis=0)
+    begin = tf.stack([tf.cast(boxes[X_1], dtype=tf.int32), tf.cast(boxes[Y_1], dtype=tf.int32), 0], axis=0)
     template = tf.slice(image, begin, size=[CROP_SIZE, CROP_SIZE, 3])
     # template = tf.image.resize(template[0], [IMAGE_DIM, IMAGE_DIM])
     return image, template, boxes
@@ -81,7 +85,7 @@ def generate_ground_truth(image, template, boxes):
     """
     tmp_boxes = boxes #* (OUTPUT_DIM/IMAGE_DIM)
     tmp_boxes = tf.cast(tmp_boxes, dtype=tf.int32)
-    label = make_box_representation(tmp_boxes, IMAGE_DIM)
+    label = make_label(tmp_boxes, IMAGE_DIM)
     # boxes = tf.stack([boxes[X_MIN], boxes[Y_MIN]], axis=0)
     return image, template, label
 

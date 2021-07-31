@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 
 from matplotlib import pyplot as plt
-from src import X_MIN, X_MAX, Y_MIN, Y_MAX, IMAGE_DIM, CROP_SIZE
+from src import X_1, X_2, Y_1, Y_2, IMAGE_DIM, CROP_SIZE
 
 
 def get_filenames(path):
@@ -21,26 +21,47 @@ def get_device():
     return device
 
 
-def make_box_representation(boxes, outer_box_width):
+def make_prediction(boxes, x_scale_factor=CROP_SIZE, y_scale_factor=CROP_SIZE, outer_box_dim=IMAGE_DIM):
 
-    x_max = boxes[X_MAX]
-    x_min = boxes[X_MIN]
-    y_max = boxes[Y_MAX]
-    y_min = boxes[Y_MIN]
+    x1 = boxes[X_1]
+    y1 = boxes[Y_1]
 
-    x, y = x_max - x_min, y_max - y_min
+    x2 = boxes[X_2]
+    y2 = boxes[Y_2]
+
+    x1 = tf.cast(x1 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+    y1 = tf.cast(y1 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+    x2 = tf.cast(x2 * x_scale_factor + x_scale_factor / 2, dtype=tf.int32)
+    y2 = tf.cast(y2 * y_scale_factor + y_scale_factor / 2, dtype=tf.int32)
+
+    boxes = tf.stack([x1, y1, x2, y2], axis=0)
+    prediction = make_label(boxes, outer_box_dim)
+
+    return prediction
+
+
+def make_label(boxes, outer_box_dim, scale=False):
+
+    x1 = boxes[X_1]
+    y1 = boxes[Y_1]
+
+    x2 = boxes[X_2]
+    y2 = boxes[Y_2]
+
+    x, y = x2 - x1, y2 - y1
 
     inner_box = tf.ones((y, x))
 
-    left_padding = tf.zeros((y, x_min))
-    right_padding = tf.zeros((y, outer_box_width - x_max))
+    left_padding = tf.zeros((y, x1))
+    right_padding = tf.zeros((y, outer_box_dim - x2))
     ret = tf.concat([left_padding, inner_box, right_padding], axis=1)
 
-    top_padding = tf.zeros((y_min, outer_box_width))
-    bottom_padding = tf.zeros((outer_box_width - y_max, outer_box_width))
+    top_padding = tf.zeros((y1, outer_box_dim))
+    bottom_padding = tf.zeros((outer_box_dim - y2, outer_box_dim))
     ret = tf.concat([top_padding, ret, bottom_padding], axis=0)
     ret = tf.expand_dims(ret, axis=-1)
     ret = tf.cast(ret, dtype=tf.float32)
+
     return ret
 
 
@@ -101,6 +122,7 @@ def show_dataset_plot(dataset, samples):
 def save_dataset_plot(dataset, samples, dest):
     i = 0
     for image, template, label in dataset.take(samples):
+        print(label[i].shape)
         save_plot(image[i], template[i], label[i], os.path.join(dest, str(i)+'.jpg'))
         i += 1
 
