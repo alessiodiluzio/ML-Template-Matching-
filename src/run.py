@@ -8,7 +8,8 @@ from src.loss import logistic_loss, cross_entropy_loss
 
 def run_train():
     train(DATA_PATH, EPOCHS, BATCH_SIZE, plot_path='plot', image_path='image', loss_fn=logistic_loss,
-          optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15)
+          optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15,
+          plot_val_logits=True)
 
 
 def run_test(test_path=DATA_PATH):

@@ -11,7 +11,7 @@ class SiameseConv2D(tf.keras.layers.Layer):
         self.strides = strides
         self.padding = padding.upper()
         self.activation = activation
-        self.batch_normalization = tf.keras.layers.BatchNormalization(axis=-1)
+        self.batch_normalization = None
         self.W = 0
         self.b_source = 0
         self.b_template = 0
@@ -27,6 +27,7 @@ class SiameseConv2D(tf.keras.layers.Layer):
         self.W = self.add_weight(name='kernel', shape=w_shape, trainable=True, initializer=tf.keras.initializers.GlorotUniform)
         self.b_source = self.add_weight(name='bias_s', shape=b_source_shape, initializer='zeros', trainable=True)
         self.b_template = self.add_weight(name='bias_t', shape=b_template_shape, initializer='zeros', trainable=True)
+        self.batch_normalization = tf.keras.layers.BatchNormalization(axis=-1)
 
     def call(self, inputs, training=False, **kwargs):
         x = inputs[0]
@@ -74,7 +75,7 @@ class SiameseConv2D(tf.keras.layers.Layer):
 class CorrelationFilter(tf.keras.layers.Layer):
 
     def __init__(self):
-        super(CorrelationFilter, self).__init__()
+        super(CorrelationFilter, self).__init__(name='correlation_filter')
         self.b = 0
 
     def build(self, input_shape):
@@ -109,6 +110,11 @@ class CorrelationFilter(tf.keras.layers.Layer):
         # final is [B, Hf, Wf, 1]
 
         return net_final
+
+    @staticmethod
+    def get_name():
+        return 'correlation_filter'
+
 
 
 

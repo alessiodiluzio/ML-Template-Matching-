@@ -156,7 +156,8 @@ def plot_metrics(model_history, save_path):
         plt.title(metric_name)
         plt.xlabel('Epoch')
         plt.ylabel(metric_name + ' value')
-        plt.ylim([0, 1])
+        if max(mt) < 1 and max(mv) < 1:
+            plt.ylim([0, 1])
         plt.legend()
         plt.savefig(os.path.join(save_path, metric_name + '_' + str(len(mv)) + '.jpg'))
         plt.pause(0.001)
