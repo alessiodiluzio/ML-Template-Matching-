@@ -69,7 +69,6 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
     tf.print(model.history)
 
 
-@tf.function
 def train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
                image_path, loss_fn, optimizer, train_metrics, val_metrics, train_progbar, val_progbar,
                early_stopping=None, plot_val_logits=True):
