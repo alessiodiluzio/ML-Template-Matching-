@@ -8,7 +8,6 @@ from src.dataset import get_dataset
 from IPython.display import clear_output
 
 
-@tf.function
 def train(train_data_path, epochs, batch_size, plot_path, image_path,
           loss_fn, optimizer, early_stopping=None):
 
@@ -37,7 +36,7 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
 
         print("\nTRAIN")
 
-        for b, (image, template, labels) in training_set.enumerate():
+        for b, (image, template, labels) in enumerate(training_set):
 
             logits, loss = siam_model.forward_backward_pass([image, template], labels, optimizer, loss_fn)
 
@@ -51,7 +50,7 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
             train_accuracy(accuracy_value)
 
             metrics = [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
-            # train_progbar.update(b + 1, metrics)
+            train_progbar.update(b + 1, metrics)
 
         val_loss = tf.metrics.Mean('val_loss')
         val_f1score = tf.metrics.Mean('val_f1')

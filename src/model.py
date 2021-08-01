@@ -27,7 +27,6 @@ class Siamese(tf.keras.Model):
             output = self.call(*args, **kwargs)
         return output
 
-    @tf.function
     def forward_backward_pass(self, inputs, label, optimizer, loss_fn):
         with tf.device(self._device):
             with tf.GradientTape() as tape:
