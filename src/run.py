@@ -3,11 +3,13 @@ import tensorflow as tf
 from src import EPOCHS, DATA_PATH, LEARNING_RATE, BATCH_SIZE
 from src.training import train
 from src.test import test
+from src.model import Siamese
 from src.loss import logistic_loss, cross_entropy_loss
 
 
 def run_train():
-    train(DATA_PATH, EPOCHS, BATCH_SIZE, plot_path='plot', image_path='image', loss_fn=logistic_loss,
+    model = Siamese()
+    train(model, DATA_PATH, EPOCHS, BATCH_SIZE, plot_path='plot', image_path='image', loss_fn=logistic_loss,
           optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE), early_stopping=15,
           plot_val_logits=True)
 
