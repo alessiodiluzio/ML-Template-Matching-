@@ -8,15 +8,15 @@ from src.dataset import get_dataset
 
 
 @tf.function
-def forward_step(model, inputs, device):
-    with tf.device(device):
+def forward_step(model, inputs):
+    with tf.device(get_device()):
         output = model(inputs, training=False)
     return output
 
 
 @tf.function
-def forward_backward_step(model, inputs, label, optimizer, loss_fn, device):
-    with tf.device(device):
+def forward_backward_step(model, inputs, label, optimizer, loss_fn):
+    with tf.device(get_device()):
         with tf.GradientTape() as tape:
             logits = model(inputs, training=True)
             loss = loss_fn(logits, label, activation=None, balance_factor=get_balance_factor(), training=True)
@@ -63,18 +63,15 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
     train_progbar = tf.keras.utils.Progbar(train_steps)
     val_progbar = tf.keras.utils.Progbar(val_steps)
 
-    model = train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
+    train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
                        image_path, loss_fn, optimizer, train_metrics, val_metrics, train_progbar,
                        val_progbar, early_stopping, plot_val_logits)
-    tf.print(model.history)
 
 
 def train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
                image_path, loss_fn, optimizer, train_metrics, val_metrics, train_progbar, val_progbar,
                early_stopping=None, plot_val_logits=True):
 
-    device = get_device()
-    print(f'Train on device {device}')
 
     best_loss = 1000000
     last_improvement = 0
@@ -107,7 +104,7 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
         print("\nTRAIN")
         for b, (image, template, label) in zip(range(train_steps), training_set.take(train_steps)):
 
-            logits, loss = forward_backward_step(model, [image, template], label, optimizer, loss_fn, device)
+            logits, loss = forward_backward_step(model, [image, template], label, optimizer, loss_fn)
 
             metrics = compute_metrics(logits, label, loss)
 
@@ -115,12 +112,12 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
             train_f1score(metrics[1][1])
             train_accuracy(metrics[2][1])
 
-            train_progbar.update(b+1)
+            train_progbar.update(b+1, metrics)
 
         print("\nVALIDATE")
         for b, (image, template, label) in zip(range(val_steps), training_set.take(val_steps)):
 
-            logits = forward_step(model, [image, template], device)
+            logits = forward_step(model, [image, template])
             loss = loss_fn(logits, label, activation=None, balance_factor=balance_factor, training=False)
 
             metrics = compute_metrics(logits, label, loss)
@@ -129,7 +126,7 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
             val_f1score(metrics[1][1])
             val_accuracy(metrics[2][1])
 
-            val_progbar.update(b+1)
+            val_progbar.update(b+1, metrics)
 
         model.history['train_loss'].append(train_loss.result())
         model.history['train_acc'].append(train_accuracy.result())
