@@ -85,7 +85,7 @@ def make_label(boxes, outer_box_dim=IMAGE_DIM):
     paddings = [[y1, outer_box_dim - y2], [x1, outer_box_dim - x2]]
     ret = tf.pad(inner_box, paddings, mode='CONSTANT', constant_values=-1)
     ret = tf.cast(ret, dtype=tf.float32)
-    ret = tf.zeros((IMAGE_DIM, IMAGE_DIM)) + ret
+    ret = tf.zeros((outer_box_dim, outer_box_dim)) + ret
     ret = tf.expand_dims(ret, axis=-1)
 
     return ret

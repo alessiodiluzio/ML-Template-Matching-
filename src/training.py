@@ -43,8 +43,10 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
           loss_fn, optimizer, early_stopping=None, plot_val_logits=True):
 
     device = get_device()
+    print(f'Train on device {device}')
     siam_model = Siamese()
-    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=False)
+    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=True)
+    exit()
     best_loss = 0
     last_improvement = 0
 

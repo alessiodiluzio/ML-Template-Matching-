@@ -63,7 +63,7 @@ def extract_crop(image, boxes):
 
     template = tf.image.pad_to_bounding_box(template[0], offset_height, offset_width, IMAGE_DIM, IMAGE_DIM)
     """
-    begin = tf.stack([tf.cast(boxes[X_1], dtype=tf.int32), tf.cast(boxes[Y_1], dtype=tf.int32), 0], axis=0)
+    begin = tf.stack([tf.cast(boxes[Y_1], dtype=tf.int32), tf.cast(boxes[X_1], dtype=tf.int32), 0], axis=0)
     template = tf.slice(image, begin, size=[CROP_SIZE, CROP_SIZE, 3])
     # template = tf.image.resize(template[0], [IMAGE_DIM, IMAGE_DIM])
     return image, template, boxes
@@ -138,5 +138,5 @@ def get_dataset(data_path=DATA_PATH, batch_size=BATCH_SIZE, split_perc=0.7, show
     training_step = int(len(training_images)/BATCH_SIZE)  # training step = | TRAINING_SET |/batch_size
     validation_step = int(len(validation_images)/BATCH_SIZE)  # validation step = | VALIDATION_SET |/batch_size
     if show:
-        plot_dataset(training_set, 3, target='show')
+        plot_dataset(training_set, 15, target='show')
     return training_set, validation_set, training_step, validation_step

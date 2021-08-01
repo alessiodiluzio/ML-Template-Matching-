@@ -3,7 +3,7 @@ import platform
 OS = platform.system()
 
 # PATH
-DATA_PATH = 'samples'
+DATA_PATH = 'samples_big/samples'
 
 # PREPROCESSING
 IMAGE_DIM = 255
