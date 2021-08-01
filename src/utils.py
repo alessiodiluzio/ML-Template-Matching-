@@ -6,13 +6,17 @@ from src import X_1, X_2, Y_1, Y_2, IMAGE_DIM, CROP_SIZE, OS
 
 
 def get_filenames(path):
+    out = []
     if os.path.exists(path):
         abs_path = os.path.abspath(path)
         names = os.listdir(path)
         names.sort()
         names = map(lambda name: os.path.join(abs_path, name), names)
-        return list(names)
-    return []
+        out = list(names)
+    if len(out) == 0:
+        print("Error Data Path is empty.")
+        exit(1)
+    return out
 
 
 def get_device():
@@ -107,6 +111,7 @@ def plot(image, template, label=None, logit=None, target='save', dest='.'):
     sub_plt.set_title("Template")
     plt.imshow(template)
     if label is not None:
+        label = tf.squeeze(label, axis=-1)
         sub_plt = fig.add_subplot(1, n_plot, 3)
         sub_plt.set_title("Ground Truth")
         plt.imshow(label)

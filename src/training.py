@@ -4,15 +4,17 @@ import os
 from src.model import Siamese
 from src.metrics import precision, recall, accuracy, f1score
 from src.utils import plot, plot_metrics, get_balance_factor, get_device
+from src.dataset import get_dataset
 from IPython.display import clear_output
 
 
-def train(training_set, validation_set, epochs, train_steps, val_steps, plot_path, image_path,
+@tf.function
+def train(train_data_path, epochs, batch_size, plot_path, image_path,
           loss_fn, optimizer, early_stopping=None):
 
     device = get_device()
     siam_model = Siamese(checkpoint_dir="checkpoint", device=device)
-
+    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=False)
     best_loss = 0
     last_improvement = 0
 
@@ -35,7 +37,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
         print("\nTRAIN")
 
-        for b, (image, template, labels) in enumerate(training_set):
+        for b, (image, template, labels) in training_set.enumerate():
 
             logits, loss = siam_model.forward_backward_pass([image, template], labels, optimizer, loss_fn)
 
@@ -49,7 +51,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
             train_accuracy(accuracy_value)
 
             metrics = [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
-            train_progbar.update(b + 1, metrics)
+            # train_progbar.update(b + 1, metrics)
 
         val_loss = tf.metrics.Mean('val_loss')
         val_f1score = tf.metrics.Mean('val_f1')

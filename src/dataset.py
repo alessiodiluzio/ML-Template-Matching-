@@ -5,6 +5,7 @@ from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, CROP_SIZE, X_1, Y_1
 from src.utils import make_label, get_filenames, plot_dataset
 
 
+@tf.function
 def load_image(filename):
     """
     1)
@@ -17,6 +18,7 @@ def load_image(filename):
     return image
 
 
+@tf.function
 def preprocess(image):
     """
     2)
@@ -41,6 +43,7 @@ def preprocess(image):
     return image, boxes
 
 
+@tf.function
 def extract_crop(image, boxes):
     """
     3)
@@ -69,6 +72,7 @@ def extract_crop(image, boxes):
     return image, template, boxes
 
 
+@tf.function
 def generate_ground_truth(image, template, boxes):
     """
     4)
@@ -99,6 +103,7 @@ def perturb(image, template, label):
     return image, template, label
 
 
+@tf.function
 def make_dataset(images_path, batch_size, augmentation=False):
     """
     Build a dataset from a list of image
@@ -120,6 +125,7 @@ def make_dataset(images_path, batch_size, augmentation=False):
     return dataset
 
 
+@tf.function
 def get_dataset(data_path=DATA_PATH, batch_size=BATCH_SIZE, split_perc=0.7, show=False):
     """
     Build training and validation set ready for training phase.
