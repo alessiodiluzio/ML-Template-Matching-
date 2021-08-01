@@ -165,4 +165,4 @@ def plot_metrics(model_history, save_path):
 
 
 def get_balance_factor():
-    return (CROP_SIZE * CROP_SIZE)/(IMAGE_DIM * IMAGE_DIM)
+    return tf.cast(tf.divide(tf.multiply(CROP_SIZE, CROP_SIZE), tf.multiply(IMAGE_DIM, IMAGE_DIM)), dtype=tf.float32)

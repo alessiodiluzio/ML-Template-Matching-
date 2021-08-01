@@ -60,14 +60,18 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
     }
     model = Siamese()
 
+    train_progbar = tf.keras.utils.Progbar(train_steps)
+    val_progbar = tf.keras.utils.Progbar(val_steps)
+
     model = train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
-               image_path, loss_fn, optimizer, train_metrics, val_metrics, early_stopping, plot_val_logits)
+                       image_path, loss_fn, optimizer, train_metrics, val_metrics, train_progbar,
+                       val_progbar, early_stopping, plot_val_logits)
     tf.print(model.history)
 
 
 @tf.function
 def train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
-               image_path, loss_fn, optimizer, train_metrics, val_metrics,
+               image_path, loss_fn, optimizer, train_metrics, val_metrics, train_progbar, val_progbar,
                early_stopping=None, plot_val_logits=True):
 
     device = get_device()
@@ -101,8 +105,6 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
         val_f1score.reset_states()
         val_accuracy.reset_states()
 
-        train_progbar = tf.keras.utils.Progbar(train_steps)
-
         print("\nTRAIN")
         for b, (image, template, label) in zip(range(train_steps), training_set.take(train_steps)):
 
@@ -113,12 +115,8 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
             train_loss(loss)
             train_f1score(metrics[1][1])
             train_accuracy(metrics[2][1])
-            tf.print(loss)
+
             train_progbar.update(b+1)
-
-        val_progbar = tf.keras.utils.Progbar(val_steps)
-
-        # VALIDATION LOOP
 
         print("\nVALIDATE")
         for b, (image, template, label) in zip(range(val_steps), training_set.take(val_steps)):

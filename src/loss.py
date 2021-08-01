@@ -3,10 +3,9 @@ from src.utils import get_zero_base_label
 
 
 def get_balanced_weigths(balance_factor, label):
-    label_true = (label + 1) / 2
-    label_false = (label - 1) / 2 * -1
-    weights = 1/balance_factor * label_true + 1/(1 - balance_factor) * label_false
-    return weights
+    label_true = tf.divide(tf.add(label, 1), 2)
+    label_false = tf.multiply(tf.divide(tf.add(label, - 1), 2), -1)
+    return tf.add(tf.multiply(tf.add(1.0, -balance_factor), label_true), tf.multiply(balance_factor, label_false))
 
 
 def cross_entropy_loss(logits, labels, activation, balance_factor, training=True):
