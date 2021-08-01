@@ -3,7 +3,7 @@ import platform
 OS = platform.system()
 
 # PATH
-DATA_PATH = 'samples_big/samples'
+DATA_PATH = 'samples'
 
 # PREPROCESSING
 IMAGE_DIM = 255
@@ -19,7 +19,7 @@ NUM_BOXES = 1
 
 # TRAINING
 BATCH_SIZE = 5
-EPOCHS = 20
+EPOCHS = 5
 LEARNING_RATE = 0.0000099
 
 # UTILS

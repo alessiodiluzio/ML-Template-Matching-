@@ -11,7 +11,7 @@ message = 'Usage: python main.py <mode> [-p <data_path>]\n' \
           '-p train/test performed on images contained at data_path.\n'
 
 
-def main(_):
+def main():
     arg = sys.argv[1:]
     if len(arg) < 1:
         print(message)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         mlcompute.set_mlc_device('gpu')
         print('Train on M1 GPU')
     print(f'Running on platform: {OS}')
-    tf.compat.v1.app.run()
+    main()
 
 
 

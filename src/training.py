@@ -7,12 +7,14 @@ from src.utils import plot, plot_metrics, get_balance_factor, get_device
 from src.dataset import get_dataset
 
 
+@tf.function
 def forward_step(model, inputs, device):
     with tf.device(device):
         output = model(inputs, training=False)
     return output
 
 
+@tf.function
 def forward_backward_step(model, inputs, label, optimizer, loss_fn, device):
     with tf.device(device):
         with tf.GradientTape() as tape:
@@ -23,6 +25,7 @@ def forward_backward_step(model, inputs, label, optimizer, loss_fn, device):
         return logits, loss
 
 
+@tf.function
 def compute_metrics(logits, label, loss):
     precision_value = precision(logits, label),
     recall_value = recall(logits, label)
@@ -42,55 +45,85 @@ def plot_dataset_with_logits(model, dataset, save_path, epoch):
 def train(train_data_path, epochs, batch_size, plot_path, image_path,
           loss_fn, optimizer, early_stopping=None, plot_val_logits=True):
 
+    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=False)
+
+    train_metrics = {
+        'train_loss': tf.metrics.Mean('train_loss'),
+        'train_f1': tf.metrics.Mean('train_f1'),
+        'train_acc': tf.metrics.Mean('train_acc'),
+    }
+
+    val_metrics = {
+        'val_loss': tf.metrics.Mean('val_loss'),
+        'val_f1': tf.metrics.Mean('val_f1'),
+        'val_acc': tf.metrics.Mean('val_acc'),
+    }
+    model = Siamese()
+
+    model = train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
+               image_path, loss_fn, optimizer, train_metrics, val_metrics, early_stopping, plot_val_logits)
+    tf.print(model.history)
+
+
+@tf.function
+def train_loop(model, training_set, validation_set, train_steps, val_steps, epochs, plot_path,
+               image_path, loss_fn, optimizer, train_metrics, val_metrics,
+               early_stopping=None, plot_val_logits=True):
+
     device = get_device()
     print(f'Train on device {device}')
-    siam_model = Siamese()
-    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=False)
 
     best_loss = 0
     last_improvement = 0
 
     # Initialize dictionary to store the history
-    siam_model.history = {'train_loss': [], 'val_loss': [], 'train_f1score': [],
-                          'val_f1score': [], 'train_acc': [], 'val_acc': []}
+    model.history = {'train_loss': [], 'val_loss': [], 'train_f1score': [],
+                     'val_f1score': [], 'train_acc': [], 'val_acc': []}
     balance_factor = get_balance_factor()
+
+    train_loss = train_metrics['train_loss']
+    train_f1score = train_metrics['train_f1']
+    train_accuracy = train_metrics['train_acc']
+
+    val_loss = val_metrics['val_loss']
+    val_f1score = val_metrics['val_f1']
+    val_accuracy = val_metrics['val_acc']
+
     for epoch in range(epochs):
 
-        print("Epoch: {}/{}".format(epoch + 1, epochs))
+        print(f'\nEpoch: {epoch+1}/{epochs}')
 
-        train_loss = tf.metrics.Mean('train_loss')
-        train_f1score = tf.metrics.Mean('train_f1')
-        train_accuracy = tf.metrics.Mean('train_acc')
+        train_loss.reset_states()
+        train_f1score.reset_states()
+        train_accuracy.reset_states()
+
+        val_loss.reset_states()
+        val_f1score.reset_states()
+        val_accuracy.reset_states()
 
         train_progbar = tf.keras.utils.Progbar(train_steps)
 
         print("\nTRAIN")
+        for b, (image, template, label) in zip(range(train_steps), training_set.take(train_steps)):
 
-        for b, (image, template, label) in enumerate(training_set):
-
-            logits, loss = forward_backward_step(siam_model, [image, template], label, optimizer, loss_fn, device)
+            logits, loss = forward_backward_step(model, [image, template], label, optimizer, loss_fn, device)
 
             metrics = compute_metrics(logits, label, loss)
 
             train_loss(loss)
             train_f1score(metrics[1][1])
             train_accuracy(metrics[2][1])
-
-            train_progbar.update(b + 1, metrics)
-
-        val_loss = tf.metrics.Mean('val_loss')
-        val_f1score = tf.metrics.Mean('val_f1')
-        val_accuracy = tf.metrics.Mean('val_acc')
+            tf.print(loss)
+            train_progbar.update(b+1)
 
         val_progbar = tf.keras.utils.Progbar(val_steps)
 
         # VALIDATION LOOP
 
         print("\nVALIDATE")
+        for b, (image, template, label) in zip(range(val_steps), training_set.take(val_steps)):
 
-        for b, (image, template, label) in enumerate(validation_set):
-
-            logits = forward_step(siam_model, [image, template], device)
+            logits = forward_step(model, [image, template], device)
             loss = loss_fn(logits, label, activation=None, balance_factor=balance_factor, training=False)
 
             metrics = compute_metrics(logits, label, loss)
@@ -99,29 +132,31 @@ def train(train_data_path, epochs, batch_size, plot_path, image_path,
             val_f1score(metrics[1][1])
             val_accuracy(metrics[2][1])
 
-            val_progbar.update(b + 1, metrics)
+            val_progbar.update(b+1)
 
-        if plot_val_logits:
-            plot_dataset_with_logits(siam_model, validation_set, image_path, epoch)
+        model.history['train_loss'].append(train_loss.result())
+        model.history['train_acc'].append(train_accuracy.result())
+        model.history['train_f1score'].append(train_f1score.result())
 
-        siam_model.history['train_loss'].append(train_loss.result().numpy())
-        siam_model.history['train_acc'].append(train_accuracy.result().numpy())
-        siam_model.history['train_f1score'].append(train_f1score.result().numpy())
+        model.history['val_loss'].append(val_loss.result())
+        model.history['val_acc'].append(val_accuracy.result())
+        model.history['val_f1score'].append(val_f1score.result())
 
-        siam_model.history['val_loss'].append(val_loss.result().numpy())
-        siam_model.history['val_acc'].append(val_accuracy.result().numpy())
-        siam_model.history['val_f1score'].append(val_f1score.result().numpy())
+        if tf.executing_eagerly():
+            if plot_val_logits:
+                plot_dataset_with_logits(model, validation_set, image_path, epoch)
 
-        if siam_model.history['val_loss'][-1] < best_loss:
-            last_improvement = 0
-            siam_model.save_model('checkpoint')
-            target_loss = siam_model.history['val_loss'][-1]
-            print(f'Model saved. validation loss : {best_loss} --> {target_loss}')
-            best_loss = target_loss
-        else:
-            last_improvement += 1
+            if model.history['val_loss'][-1] < best_loss:
+                last_improvement = 0
+                model.save_model('checkpoint')
+                target_loss = model.history['val_loss'][-1]
+                print(f'Model saved. validation loss : {best_loss} --> {target_loss}')
+                best_loss = target_loss
+            else:
+                last_improvement += 1
 
-        if early_stopping is not None and last_improvement >= early_stopping:
-            break
+            if early_stopping is not None and last_improvement >= early_stopping:
+                break
 
-    plot_metrics(siam_model.history, plot_path)
+    if tf.executing_eagerly():
+        plot_metrics(model.history, plot_path)
