@@ -122,7 +122,6 @@ def plot(image, template, label=None, logit=None, target='save', dest='.'):
         plt.imshow(logit)
     if target == 'save':
         plt.savefig(dest)
-        plt.pause(0.001)
         plt.close()
     elif target == 'show':
         plt.show()
@@ -160,7 +159,6 @@ def plot_metrics(model_history, save_path):
             plt.ylim([0, 1])
         plt.legend()
         plt.savefig(os.path.join(save_path, metric_name + '_' + str(len(mv)) + '.jpg'))
-        plt.pause(0.001)
         plt.close()
 
 

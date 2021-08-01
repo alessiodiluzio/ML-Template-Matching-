@@ -34,10 +34,10 @@ def compute_metrics(logits, label, loss):
     return [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
 
 
-def plot_dataset_with_logits(model, dataset, save_path, epoch):
+def plot_dataset_with_logits(model, dataset, save_path, epoch, prefix=''):
     for i, (image, template, labels) in zip(range(3), dataset.take(3)):
         predictions = model([image, template])
-        filename = 'epoch_{}_sample_{}.jpg'.format(epoch+1, i)
+        filename = prefix + '_epoch_{}_sample_{}.jpg'.format(epoch+1, i)
         plot(image[0], template[0], labels[0], predictions[0],
              target='save', dest=os.path.join(save_path, filename))
 
@@ -127,7 +127,8 @@ def train(model, train_data_path, epochs, batch_size, plot_path,
 
         if tf.executing_eagerly():
             if plot_val_logits:
-                plot_dataset_with_logits(model, validation_set, image_path, epoch)
+                plot_dataset_with_logits(model, training_set, image_path, epoch, 'train')
+                plot_dataset_with_logits(model, validation_set, image_path, epoch, 'val')
 
             if model.history['val_loss'][-1] < best_loss:
                 last_improvement = 0

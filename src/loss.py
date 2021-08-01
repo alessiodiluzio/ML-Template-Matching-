@@ -33,6 +33,7 @@ def compute_logistic_loss(labels, logits):
 def logistic_loss(logits, label, activation, balance_factor, training=True):
     log_loss = compute_logistic_loss(label, logits)
     if training:
+        pass
         weights = get_balanced_weigths(balance_factor, label)
         log_loss = tf.math.multiply(log_loss, weights)
     log_loss = tf.reduce_mean(log_loss)
