@@ -73,7 +73,7 @@ def train_loop(model, training_set, validation_set, train_steps, val_steps, epoc
     device = get_device()
     print(f'Train on device {device}')
 
-    best_loss = 0
+    best_loss = 1000000
     last_improvement = 0
 
     # Initialize dictionary to store the history
