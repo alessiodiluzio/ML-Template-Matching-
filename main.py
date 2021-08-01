@@ -2,6 +2,7 @@ import sys
 import tensorflow as tf
 
 from src.run import run_train, run_test
+from src import OS
 
 message = 'Usage: python main.py <mode> [-p <data_path>]\n' \
           'mode:\n' \
@@ -23,6 +24,10 @@ def main(_):
 
 
 if __name__ == "__main__":
+    if OS == 'Darwin':
+        from tensorflow.python.compiler.mlcompute import mlcompute
+        mlcompute.set_mlc_device('gpu')
+    print(f'Running on platform: {OS}')
     tf.compat.v1.app.run()
 
 

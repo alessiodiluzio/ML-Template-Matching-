@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 from src.layers import SiameseConv2D, CorrelationFilter
 from src.utils import get_balance_factor
+from src import OS
 
 
 class Siamese(tf.keras.Model):
@@ -21,15 +22,13 @@ class Siamese(tf.keras.Model):
         net_final = self._upsample(corr)
         return net_final
 
-    @tf.function
     def forward(self, *args, **kwargs):
         with tf.device(self._device):
             output = self.call(*args, **kwargs)
         return output
 
-    @tf.function
     def forward_backward_pass(self, inputs, label, optimizer, loss_fn):
-       with tf.device(self._device):
+        with tf.device(self._device):
             with tf.GradientTape() as tape:
                 logits = self.call(inputs, training=True)
                 loss = loss_fn(logits, label, activation=None, balance_factor=get_balance_factor(), training=True)

@@ -2,22 +2,23 @@ import os
 import tensorflow as tf
 
 from matplotlib import pyplot as plt
-from src import X_1, X_2, Y_1, Y_2, IMAGE_DIM, CROP_SIZE
+from src import X_1, X_2, Y_1, Y_2, IMAGE_DIM, CROP_SIZE, OS
 
 
 def get_filenames(path):
     if os.path.exists(path):
         abs_path = os.path.abspath(path)
         names = os.listdir(path)
+        names.sort()
         names = map(lambda name: os.path.join(abs_path, name), names)
         return list(names)
     return []
 
 
 def get_device():
-    device = tf.config.list_physical_devices('CPU')[0]
-    if len(tf.config.list_physical_devices('GPU')) > 0:
-        device = tf.config.list_physical_devices('GPU')[0]
+    device = 'cpu:0'
+    if len(tf.config.list_physical_devices('GPU')) > 0 or OS == 'Darwin':
+        device = 'gpu:0'
     return device
 
 
@@ -76,13 +77,12 @@ def make_label(boxes, outer_box_dim=IMAGE_DIM):
 
     x, y = x2 - x1, y2 - y1
 
-    inner_box = tf.ones((y, x))
-
+    inner_box = tf.ones((x, y))
     paddings = [[y1, outer_box_dim - y2], [x1, outer_box_dim - x2]]
     ret = tf.pad(inner_box, paddings, mode='CONSTANT', constant_values=-1)
-
-    ret = tf.expand_dims(ret, axis=-1)
     ret = tf.cast(ret, dtype=tf.float32)
+    ret = tf.zeros((IMAGE_DIM, IMAGE_DIM)) + ret
+    ret = tf.expand_dims(ret, axis=-1)
 
     return ret
 

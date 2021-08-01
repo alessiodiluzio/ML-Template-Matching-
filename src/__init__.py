@@ -1,3 +1,7 @@
+import platform
+
+OS = platform.system()
+
 # PATH
 DATA_PATH = 'samples'
 

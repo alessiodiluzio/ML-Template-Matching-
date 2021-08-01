@@ -5,7 +5,6 @@ from src import CHANNELS, IMAGE_DIM, DATA_PATH, BATCH_SIZE, CROP_SIZE, X_1, Y_1
 from src.utils import make_label, get_filenames, plot_dataset
 
 
-@tf.function
 def load_image(filename):
     """
     1)
@@ -18,7 +17,6 @@ def load_image(filename):
     return image
 
 
-@tf.function
 def preprocess(image):
     """
     2)
@@ -27,7 +25,7 @@ def preprocess(image):
     :return: image and the coordinates of a box specified by [x_min, x_max, y_min, y_max].
     """
     image = tf.image.resize(image, [IMAGE_DIM, IMAGE_DIM])
-    image = tf.image.per_image_standardization(image)
+    image /= 255
 
     x1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
     y1 = tf.random.uniform(shape=[1], minval=0, maxval=IMAGE_DIM - CROP_SIZE, dtype=tf.int32)
@@ -43,7 +41,6 @@ def preprocess(image):
     return image, boxes
 
 
-@tf.function
 def extract_crop(image, boxes):
     """
     3)
@@ -72,7 +69,6 @@ def extract_crop(image, boxes):
     return image, template, boxes
 
 
-@tf.function
 def generate_ground_truth(image, template, boxes):
     """
     4)
@@ -91,7 +87,6 @@ def generate_ground_truth(image, template, boxes):
 
 
 # TODO
-@tf.function
 def perturb(image, template, label):
     """
     5) (optional)
@@ -119,7 +114,8 @@ def make_dataset(images_path, batch_size, augmentation=False):
     dataset = dataset.map(extract_crop)  # 3)
     dataset = dataset.map(generate_ground_truth)  # 4)
     if augmentation:
-        dataset = dataset.map(perturb)  # 5)
+        pass
+        #dataset = dataset.map(perturb)  # 5)
     dataset = dataset.batch(batch_size, drop_remainder=True)
     return dataset
 

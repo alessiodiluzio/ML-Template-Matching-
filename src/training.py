@@ -2,7 +2,7 @@ import tensorflow as tf
 import os
 
 from src.model import Siamese
-from src.metrics import precision_recall, accuracy, f1score
+from src.metrics import precision, recall, accuracy, f1score
 from src.utils import plot, plot_metrics, get_balance_factor, get_device
 from IPython.display import clear_output
 
@@ -13,7 +13,7 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
     device = get_device()
     siam_model = Siamese(checkpoint_dir="checkpoint", device=device)
 
-    best_f1score = 0
+    best_loss = 0
     last_improvement = 0
 
     # Initialize dictionary to store the history
@@ -39,8 +39,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
 
             logits, loss = siam_model.forward_backward_pass([image, template], labels, optimizer, loss_fn)
 
-            precision, recall = precision_recall(logits, labels)
-            f1score_value = f1score(precision, recall)
+            precision_value = precision(logits, labels),
+            recall_value = recall(logits, labels)
+            f1score_value = f1score(precision_value, recall_value)
             accuracy_value = accuracy(logits, labels)
 
             train_loss(loss)
@@ -48,7 +49,6 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
             train_accuracy(accuracy_value)
 
             metrics = [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
-
             train_progbar.update(b + 1, metrics)
 
         val_loss = tf.metrics.Mean('val_loss')
@@ -66,8 +66,9 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
             logits = siam_model.forward([image, template])
             loss = loss_fn(logits, labels, activation=None, balance_factor=balance_factor, training=False)
 
-            precision, recall = precision_recall(logits, labels)
-            f1score_value = f1score(precision, recall)
+            precision_value = precision(logits, labels),
+            recall_value  = recall(logits, labels)
+            f1score_value = f1score(precision_value, recall_value)
             accuracy_value = accuracy(logits, labels)
 
             val_loss(loss)
@@ -93,11 +94,11 @@ def train(training_set, validation_set, epochs, train_steps, val_steps, plot_pat
         siam_model.history['val_acc'].append(val_accuracy.result().numpy())
         siam_model.history['val_f1score'].append(val_f1score.result().numpy())
 
-        if siam_model.history['val_f1score'][-1] >= best_f1score:
+        if siam_model.history['val_loss'][-1] < best_loss:
             last_improvement = 0
             siam_model.save_model()
-            print("Model saved. f1score : {} --> {}".format(best_f1score, siam_model.history['val_f1score'][-1]))
-            best_f1score = siam_model.history['val_f1score'][-1]
+            print("Model saved. validation loss : {} --> {}".format(best_loss, siam_model.history['val_loss'][-1]))
+            best_loss = siam_model.history['val_loss'][-1]
         else:
             last_improvement += 1
 
