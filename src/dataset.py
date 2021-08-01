@@ -138,5 +138,5 @@ def get_dataset(data_path=DATA_PATH, batch_size=BATCH_SIZE, split_perc=0.7, show
     training_step = int(len(training_images)/BATCH_SIZE)  # training step = | TRAINING_SET |/batch_size
     validation_step = int(len(validation_images)/BATCH_SIZE)  # validation step = | VALIDATION_SET |/batch_size
     if show:
-        plot_dataset(training_set, 15, target='show')
+        plot_dataset(training_set, 3, target='show')
     return training_set, validation_set, training_step, validation_step

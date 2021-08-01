@@ -23,14 +23,6 @@ def forward_backward_step(model, inputs, label, optimizer, loss_fn, device):
         return logits, loss
 
 
-def plot_dataset_with_logits(model, dataset, save_path, epoch):
-    for i, (image, template, labels) in zip(range(3), dataset.take(3)):
-        predictions = model([image, template])
-        filename = 'epoch_{}_sample_{}.jpg'.format(epoch+1, i)
-        plot(image[0], template[0], labels[0], predictions[0],
-             target='save', dest=os.path.join(save_path, filename))
-
-
 def compute_metrics(logits, label, loss):
     precision_value = precision(logits, label),
     recall_value = recall(logits, label)
@@ -39,14 +31,22 @@ def compute_metrics(logits, label, loss):
     return [('loss', loss), ("f1", f1score_value), ("accuracy", accuracy_value)]
 
 
+def plot_dataset_with_logits(model, dataset, save_path, epoch):
+    for i, (image, template, labels) in zip(range(3), dataset.take(3)):
+        predictions = model([image, template])
+        filename = 'epoch_{}_sample_{}.jpg'.format(epoch+1, i)
+        plot(image[0], template[0], labels[0], predictions[0],
+             target='save', dest=os.path.join(save_path, filename))
+
+
 def train(train_data_path, epochs, batch_size, plot_path, image_path,
           loss_fn, optimizer, early_stopping=None, plot_val_logits=True):
 
     device = get_device()
     print(f'Train on device {device}')
     siam_model = Siamese()
-    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=True)
-    exit()
+    training_set, validation_set, train_steps, val_steps = get_dataset(train_data_path, batch_size, show=False)
+
     best_loss = 0
     last_improvement = 0
 
